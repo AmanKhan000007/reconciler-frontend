@@ -31,7 +31,7 @@ function FrameImport({ progress }) {
       <div style={{ padding:"16px 20px", borderBottom:"1px solid #E5E7EB", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
         <div>
           <div style={{ fontSize:14, fontWeight:700, color:"#1F2937" }}>Import CSV Transactions</div>
-          <div style={{ fontSize:11, color:"#9CA3AF", marginTop:2 }}>Source: Bank · INR</div>
+          <div style={{ fontSize:11, color:"#9CA3AF", marginTop:2 }}>Source: Bank · USD</div>
         </div>
         <div style={{ background:"rgba(239,68,68,.08)", border:"1px solid rgba(239,68,68,.2)", borderRadius:8, padding:"6px 14px", fontSize:12, color:"#EF4444", fontWeight:600 }}>
           {done}/{rows.length} imported
@@ -83,7 +83,7 @@ function FrameReconcile({ progress }) {
       <div style={{ flex:1, padding:"12px 20px", overflowY:"auto", fontFamily:"monospace" }}>
         {visible.map((l, i) => (
           <div key={i} style={{ fontSize:12, color:l.col, marginBottom:6, animation:"fadeIn .3s both" }}>
-            <span style={{ color:"#D1D5DB", marginRight:8 }}>{">"}</span>{l.msg}
+            <span style={{ color:"#D1D5DB", margUSDight:8 }}>{">"}</span>{l.msg}
           </div>
         ))}
         {phase !== "done" && (
@@ -119,9 +119,9 @@ function FrameResults({ progress }) {
           <div style={{ background:"#FFFBEB", border:"1px solid rgba(217,119,6,.2)", borderRadius:10, padding:"14px 16px", animation:"fadeIn .4s both" }}>
             <div style={{ fontSize:11, fontWeight:700, color:"#D97706", marginBottom:8 }}>⚠ Exception — REF-0010</div>
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, fontSize:12 }}>
-              <div style={{ color:"#6B7280" }}>Bank amount: <span style={{ color:"#1F2937", fontFamily:"monospace" }}>₹250.00</span></div>
-              <div style={{ color:"#6B7280" }}>Internal: <span style={{ color:"#1F2937", fontFamily:"monospace" }}>₹275.00</span></div>
-              <div style={{ color:"#6B7280" }}>Difference: <span style={{ color:"#D97706", fontFamily:"monospace" }}>₹25.00</span></div>
+              <div style={{ color:"#6B7280" }}>Bank amount: <span style={{ color:"#1F2937", fontFamily:"monospace" }}>$250.00</span></div>
+              <div style={{ color:"#6B7280" }}>Internal: <span style={{ color:"#1F2937", fontFamily:"monospace" }}>$275.00</span></div>
+              <div style={{ color:"#6B7280" }}>Difference: <span style={{ color:"#D97706", fontFamily:"monospace" }}>$25.00</span></div>
               <div style={{ color:"#6B7280" }}>Action: <span style={{ color:"#EF4444" }}>Raise ticket →</span></div>
             </div>
           </div>
@@ -129,7 +129,7 @@ function FrameResults({ progress }) {
         {progress > 75 && (
           <div style={{ background:"#FEF2F2", border:"1px solid rgba(220,38,38,.15)", borderRadius:10, padding:"14px 16px", animation:"fadeIn .4s both" }}>
             <div style={{ fontSize:11, fontWeight:700, color:"#DC2626", marginBottom:8 }}>✗ Unmatched — REF-9999</div>
-            <div style={{ fontSize:12, color:"#6B7280" }}>Internal transfer of <span style={{ color:"#1F2937", fontFamily:"monospace" }}>₹2,500.00</span> has no matching bank entry.</div>
+            <div style={{ fontSize:12, color:"#6B7280" }}>Internal transfer of <span style={{ color:"#1F2937", fontFamily:"monospace" }}>$2,500.00</span> has no matching bank entry.</div>
           </div>
         )}
       </div>
@@ -153,7 +153,7 @@ function FrameLedger({ progress }) {
     <div style={{ display:"flex", flexDirection:"column", height:"100%" }}>
       <div style={{ padding:"14px 20px", borderBottom:"1px solid #E5E7EB", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
         <div style={{ fontSize:14, fontWeight:700, color:"#1F2937" }}>Bank Ledger — November 2024</div>
-        <div style={{ fontSize:12, color:"#16A34A", fontWeight:600, fontFamily:"monospace" }}>Balance: ₹19,650.00</div>
+        <div style={{ fontSize:12, color:"#16A34A", fontWeight:600, fontFamily:"monospace" }}>Balance: $19,650.00</div>
       </div>
       <div style={{ flex:1, overflowY:"auto" }}>
         <table style={{ width:"100%", borderCollapse:"collapse", fontSize:11 }}>
@@ -197,9 +197,9 @@ function FrameDashboard({ progress }) {
     <div style={{ display:"flex", flexDirection:"column", height:"100%", padding:"16px 20px", gap:14, overflowY:"auto" }}>
       <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8 }}>
         {[
-          { l:"Revenue",   v:"₹1.49L", c:"#2563EB", show:15 },
+          { l:"Revenue",   v:"$1.49L", c:"#2563EB", show:15 },
           { l:"Matched",   v:"87%",    c:"#16A34A", show:25 },
-          { l:"Variance",  v:"₹0.00",  c:"#16A34A", show:35 },
+          { l:"Variance",  v:"$0.00",  c:"#16A34A", show:35 },
           { l:"Tickets",   v:"2 open", c:"#D97706", show:45 },
         ].map(m => (
           <div key={m.l} style={{ background:"#F9FAFB", border:"1px solid #E5E7EB", borderRadius:8, padding:"10px 12px", opacity: show(m.show) ? 1 : 0, transition:"opacity .5s", transitionDelay:".1s" }}>

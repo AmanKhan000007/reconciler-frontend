@@ -874,25 +874,100 @@ function PageShell({ title, sub, actions, children }) {
   );
 }
 
+function Footer() {
+  return (
+    <footer style={{ flexShrink: 0, padding: "28px 6% 24px", borderTop: "1px solid rgba(255,255,255,.08)", background: "#2D3748" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 20 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 28, height: 28, background: "linear-gradient(135deg,#EF4444,#F87171)", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ fontSize: 12, fontWeight: 800, color: "#fff" }}>R</span>
+          </div>
+          <span style={{ fontSize: 15, fontWeight: 700, color: "#F9FAFB" }}>Relay</span>
+        </div>
+        <div style={{ display: "flex", gap: 28, flexWrap: "wrap" }}>
+          {[{ l: "Product", href: "#" }, { l: "Pricing", href: "#" }, { l: "Support", href: "#" }].map(item => (
+            <a key={item.l} href={item.href} style={{ fontSize: 13, color: "#CBD5E0", transition: "color .2s" }}
+              onMouseEnter={e => e.currentTarget.style.color = "#F9FAFB"} onMouseLeave={e => e.currentTarget.style.color = "#CBD5E0"}>{item.l}</a>
+          ))}
+        </div>
+        <div style={{ fontSize: 12, color: "#A0AEC0" }}>© 2025 Relay. All rights reserved.</div>
+      </div>
+    </footer>
+  );
+}
+
 // ── App Shell ─────────────────────────────────────────────────────────────────
+function appTabFromPath(pathname) {
+  const match = pathname.match(/^\/app\/([^/]+)/);
+  return match ? match[1] : null;
+}
+
+function appPathForTab(tab) {
+  return `/app/${tab}`;
+}
+
 function AppShell({ user, setUser }) {
-  const [tab, setTab] = useState("dashboard");
+  const [tab, setTab] = useState(() => {
+    if (typeof window === "undefined") return "dashboard";
+    return window.history.state?.tab || appTabFromPath(window.location.pathname) || localStorage.getItem("rec_tab") || "dashboard";
+  });
   const [toasts, setToasts] = useState([]);
   const toast = (msg, type = "success") => setToasts(p => [...p, { id: Date.now(), msg, type }]);
   const logout = () => { localStorage.removeItem("rec_token"); setUser(null); };
   const props = { user, toast };
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("rec_tab", tab);
+      const nextPath = appPathForTab(tab);
+      if (window.location.pathname !== nextPath) {
+        window.history.pushState({ screen: "app", tab }, "", nextPath);
+      } else if (window.history.state?.tab !== tab || window.history.state?.screen !== "app") {
+        window.history.replaceState({ screen: "app", tab }, "", nextPath);
+      }
+    }
+  }, [tab]);
+
+  useEffect(() => {
+    const handlePop = event => {
+      if (event.state?.tab) {
+        setTab(event.state.tab);
+      } else {
+        setTab(appTabFromPath(window.location.pathname) || "dashboard");
+      }
+    };
+    window.addEventListener("popstate", handlePop);
+    return () => window.removeEventListener("popstate", handlePop);
+  }, []);
+
   return (
     <div style={{ display: "flex", height: "100vh", overflow: "hidden", background: "#FFFFFF" }}>
       <Sidebar tab={tab} setTab={setTab} user={user} onLogout={logout} />
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-        {tab === "dashboard"    && <Dashboard   {...props} />}
-        {tab === "transactions" && <Transactions {...props} />}
-        {tab === "reconcile"   && <Reconcile   {...props} />}
-        {tab === "ledger"      && <Ledger      {...props} />}
-        {tab === "tickets"     && <Tickets     {...props} />}
-        {tab === "admin"       && user?.role === "admin" && <Admin {...props} />}
-        {tab === "settings"    && <Settings    {...props} setUser={setUser} />}
+        <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
+          <div style={{ display: tab === "dashboard" ? "flex" : "none", flex: 1, flexDirection: "column", overflow: "auto", minHeight: 0 }}>
+            <Dashboard {...props} />
+          </div>
+          <div style={{ display: tab === "transactions" ? "flex" : "none", flex: 1, flexDirection: "column", overflow: "auto", minHeight: 0 }}>
+            <Transactions {...props} />
+          </div>
+          <div style={{ display: tab === "reconcile" ? "flex" : "none", flex: 1, flexDirection: "column", overflow: "auto", minHeight: 0 }}>
+            <Reconcile {...props} />
+          </div>
+          <div style={{ display: tab === "ledger" ? "flex" : "none", flex: 1, flexDirection: "column", overflow: "auto", minHeight: 0 }}>
+            <Ledger {...props} />
+          </div>
+          <div style={{ display: tab === "tickets" ? "flex" : "none", flex: 1, flexDirection: "column", overflow: "auto", minHeight: 0 }}>
+            <Tickets {...props} />
+          </div>
+          <div style={{ display: tab === "admin" && user?.role === "admin" ? "flex" : "none", flex: 1, flexDirection: "column", overflow: "auto", minHeight: 0 }}>
+            {user?.role === "admin" && <Admin {...props} />}
+          </div>
+          <div style={{ display: tab === "settings" ? "flex" : "none", flex: 1, flexDirection: "column", overflow: "auto", minHeight: 0 }}>
+            <Settings {...props} setUser={setUser} />
+          </div>
+        </div>
+        <Footer />
       </div>
       {toasts.map(t => <Toast key={t.id} msg={t.msg} type={t.type} onClose={() => setToasts(p => p.filter(x => x.id !== t.id))} />)}
     </div>
@@ -900,7 +975,7 @@ function AppShell({ user, setUser }) {
 }
 
 // ── Auth Forms ────────────────────────────────────────────────────────────────
-function AuthPage({ onLogin }) {
+function AuthPage({ onLogin, onBack }) {
   const [mode, setMode] = useState("login");
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [loading, setLoading] = useState(false);
@@ -922,14 +997,19 @@ function AuthPage({ onLogin }) {
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F9FAFB", padding: 16, position: "relative", overflow: "hidden" }}>
       <div style={{ position: "absolute", top: "20%", left: "30%", width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle,rgba(239,68,68,.05) 0%,transparent 70%)", pointerEvents: "none", animation: "blob 18s ease-in-out infinite" }} />
       <div style={{ width: "100%", maxWidth: 400, position: "relative", zIndex: 1 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 26 }}>
+          <button type="button" onClick={onBack} style={{ background: "none", border: "none", color: "#6B7280", fontSize: 14, fontWeight: 600, cursor: "pointer", padding: 0 }}>← Back</button>
+          <button type="button" onClick={onBack} style={{ background: "none", border: "none", color: "#6B7280", fontSize: 14, fontWeight: 600, cursor: "pointer", padding: 0 }}>Home</button>
+        </div>
+
         {/* Logo */}
-        <div style={{ textAlign: "center", marginBottom: 36 }} className="fu0">
+        <button type="button" onClick={onBack} style={{ all: "unset", cursor: "pointer", display: "block", textAlign: "center", marginBottom: 36 }} className="fu0">
           <div style={{ width: 52, height: 52, background: "linear-gradient(135deg,#EF4444,#F87171)", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px", boxShadow: "0 8px 24px rgba(239,68,68,.25)", animation: "glow 3s ease-in-out infinite" }}>
             <span style={{ fontSize: 24, fontWeight: 800, color: "#fff" }}>R</span>
           </div>
           <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: "-1px", color: "#111827" }}>Relay</div>
           <div style={{ fontSize: 13, color: "#6B7280", marginTop: 4 }}>Financial transaction reconciliation platform</div>
-        </div>
+        </button>
 
         <div style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 16, padding: 32, boxShadow: "0 24px 80px rgba(0,0,0,.08)" }} className="fu1">
           {/* Toggle */}
@@ -1028,12 +1108,17 @@ function Landing({ onEnter }) {
   const [pct, setPct] = useState(0);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0 });
+    const revealEls = document.querySelectorAll(".reveal");
+    revealEls.forEach(el => el.classList.add("vis"));
+
     const fn = () => {
       const h = document.documentElement.scrollHeight - window.innerHeight;
       setPct((window.scrollY / h) * 100);
       setScrolled(window.scrollY > 50);
     };
     window.addEventListener("scroll", fn);
+    fn();
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
@@ -1180,24 +1265,7 @@ function Landing({ onEnter }) {
         </div>
       </section>
 
-      {/* Footer — light shade black */}
-      <footer style={{ padding: "48px 6% 28px", borderTop: "1px solid #E5E7EB", background: "#2D3748" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 20 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 28, height: 28, background: "linear-gradient(135deg,#EF4444,#F87171)", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ fontSize: 12, fontWeight: 800, color: "#fff" }}>R</span>
-            </div>
-            <span style={{ fontSize: 15, fontWeight: 700, color: "#F9FAFB" }}>Relay</span>
-          </div>
-          <div style={{ display: "flex", gap: 28 }}>
-            {[{ l: "Product", href: "#" }, { l: "Pricing", href: "#" }, { l: "Support", href: "#" }].map(item => (
-              <a key={item.l} href={item.href} style={{ fontSize: 13, color: "#CBD5E0", transition: "color .2s" }}
-                onMouseEnter={e => e.target.style.color = "#F9FAFB"} onMouseLeave={e => e.target.style.color = "#CBD5E0"}>{item.l}</a>
-            ))}
-          </div>
-          <div style={{ fontSize: 12, color: "#A0AEC0" }}>© 2025 Relay. All rights reserved.</div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
@@ -1208,21 +1276,69 @@ function fmt(n) {
   return (n < 0 ? "-" : "") + "$" + Math.abs(n).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+const PATH_FOR_SCREEN = { landing: "/", auth: "/signin", app: "/app" };
+function screenFromPath(pathname, hasSession) {
+  if (pathname === "/signin" || pathname === "/auth") return "auth";
+  if (hasSession) return "app";
+  return "landing";
+}
+
 // ── ROOT ──────────────────────────────────────────────────────────────────────
 export default function App() {
   useGlobalStyles();
-  const [screen, setScreen] = useState("landing"); // landing | auth | app
+  const [screen, setScreen] = useState(() => {
+    if (typeof window === "undefined") return "landing";
+    return window.history.state?.screen || screenFromPath(window.location.pathname, false);
+  });
   const [user, setUser] = useState(null);
+  const [bootstrapped, setBootstrapped] = useState(false);
 
-  // Restore session
+  const navigate = useCallback(nextScreen => {
+    if (typeof window !== "undefined") {
+      const nextPath = PATH_FOR_SCREEN[nextScreen];
+      if (window.location.pathname !== nextPath) {
+        window.history.pushState({ screen: nextScreen }, "", nextPath);
+      } else if (window.history.state?.screen !== nextScreen) {
+        window.history.replaceState({ screen: nextScreen }, "", nextPath);
+      }
+    }
+    setScreen(nextScreen);
+  }, []);
+
   useEffect(() => {
     const token = localStorage.getItem("rec_token");
     if (token) {
-      API.getMe().then(u => { setUser(u); setScreen("app"); }).catch(() => localStorage.removeItem("rec_token"));
+      API.getMe()
+        .then(u => { setUser(u); navigate("app"); })
+        .catch(() => localStorage.removeItem("rec_token"))
+        .finally(() => setBootstrapped(true));
+    } else {
+      setBootstrapped(true);
     }
-  }, []);
+  }, [navigate]);
 
-  if (screen === "landing") return <Landing onEnter={() => setScreen("auth")} />;
-  if (screen === "auth")    return <AuthPage onLogin={u => { setUser(u); setScreen("app"); }} />;
+  useEffect(() => {
+    if (!bootstrapped || screen !== "app" || typeof window === "undefined") return;
+    if (window.history.state?.screen !== "app") {
+      const tab = appTabFromPath(window.location.pathname) || localStorage.getItem("rec_tab") || "dashboard";
+      window.history.replaceState({ screen: "app", tab }, "", window.location.pathname);
+    }
+  }, [bootstrapped, screen]);
+
+  useEffect(() => {
+    const handlePop = event => {
+      if (event.state?.screen) {
+        setScreen(event.state.screen);
+      } else {
+        setScreen(screenFromPath(window.location.pathname, !!user));
+      }
+    };
+    window.addEventListener("popstate", handlePop);
+    return () => window.removeEventListener("popstate", handlePop);
+  }, [user]);
+
+  if (!bootstrapped) return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F9FAFB" }}><Spinner size={32} /></div>;
+  if (screen === "landing") return <Landing onEnter={() => navigate("auth")} />;
+  if (screen === "auth") return <AuthPage onLogin={u => { setUser(u); navigate("app"); }} onBack={() => navigate("landing")} />;
   return <AppShell user={user} setUser={setUser} />;
 }
