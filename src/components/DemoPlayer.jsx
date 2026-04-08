@@ -1,5 +1,5 @@
 // DemoPlayer.jsx
-// Self-contained animated product tour.
+// Self-contained animated product tour — White/Light theme.
 // Each "frame" is a React component that auto-advances.
 // Drop this into the landing page as: <DemoPlayer />
 
@@ -28,28 +28,25 @@ function FrameImport({ progress }) {
   const done = rows.filter(r => r.done).length;
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:0, height:"100%" }}>
-      {/* Header */}
-      <div style={{ padding:"16px 20px", borderBottom:"1px solid #1F1F1F", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+      <div style={{ padding:"16px 20px", borderBottom:"1px solid #E5E7EB", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
         <div>
-          <div style={{ fontSize:14, fontWeight:700, color:"#DDD" }}>Import CSV Transactions</div>
-          <div style={{ fontSize:11, color:"#555", marginTop:2 }}>Source: Bank · INR</div>
+          <div style={{ fontSize:14, fontWeight:700, color:"#1F2937" }}>Import CSV Transactions</div>
+          <div style={{ fontSize:11, color:"#9CA3AF", marginTop:2 }}>Source: Bank · INR</div>
         </div>
-        <div style={{ background:"rgba(99,102,241,.15)", border:"1px solid rgba(99,102,241,.3)", borderRadius:8, padding:"6px 14px", fontSize:12, color:"#A5B4FC", fontWeight:600 }}>
+        <div style={{ background:"rgba(239,68,68,.08)", border:"1px solid rgba(239,68,68,.2)", borderRadius:8, padding:"6px 14px", fontSize:12, color:"#EF4444", fontWeight:600 }}>
           {done}/{rows.length} imported
         </div>
       </div>
-      {/* Progress bar */}
-      <div style={{ height:3, background:"#1A1A1A", flexShrink:0 }}>
-        <div style={{ height:"100%", width:`${progress}%`, background:"linear-gradient(90deg,#6366F1,#8B5CF6)", transition:"width .1s" }} />
+      <div style={{ height:3, background:"#F3F4F6", flexShrink:0 }}>
+        <div style={{ height:"100%", width:`${progress}%`, background:"linear-gradient(90deg,#EF4444,#F87171)", transition:"width .1s" }} />
       </div>
-      {/* Rows */}
       <div style={{ flex:1, overflowY:"auto", padding:"8px 0" }}>
         {rows.map((r, i) => (
-          <div key={r.ref} style={{ display:"grid", gridTemplateColumns:"90px 1fr 90px 28px", gap:10, padding:"8px 20px", alignItems:"center", opacity: r.done ? 1 : 0.25, transition:"opacity .4s", borderBottom:"1px solid #111" }}>
-            <span style={{ fontSize:11, fontFamily:"monospace", color:"#555" }}>{r.ref}</span>
-            <span style={{ fontSize:12, color:"#AAA" }}>{r.desc}</span>
-            <span style={{ fontSize:12, fontFamily:"monospace", textAlign:"right", color: r.amt.startsWith("+") ? "#4ADE80" : "#FCA5A5", fontWeight:600 }}>{r.amt}</span>
-            <span style={{ fontSize:14, color: r.done ? "#4ADE80" : "#333", textAlign:"center" }}>{r.done ? "✓" : "○"}</span>
+          <div key={r.ref} style={{ display:"grid", gridTemplateColumns:"90px 1fr 90px 28px", gap:10, padding:"8px 20px", alignItems:"center", opacity: r.done ? 1 : 0.25, transition:"opacity .4s", borderBottom:"1px solid #F3F4F6" }}>
+            <span style={{ fontSize:11, fontFamily:"monospace", color:"#9CA3AF" }}>{r.ref}</span>
+            <span style={{ fontSize:12, color:"#4B5563" }}>{r.desc}</span>
+            <span style={{ fontSize:12, fontFamily:"monospace", textAlign:"right", color: r.amt.startsWith("+") ? "#16A34A" : "#DC2626", fontWeight:600 }}>{r.amt}</span>
+            <span style={{ fontSize:14, color: r.done ? "#16A34A" : "#D1D5DB", textAlign:"center" }}>{r.done ? "✓" : "○"}</span>
           </div>
         ))}
       </div>
@@ -60,37 +57,37 @@ function FrameImport({ progress }) {
 function FrameReconcile({ progress }) {
   const phase = progress < 30 ? "scanning" : progress < 60 ? "matching" : progress < 85 ? "flagging" : "done";
   const logs = [
-    { t:5,  col:"#888",     msg:"Loading bank transactions…" },
-    { t:15, col:"#888",     msg:"Loading internal transactions…" },
-    { t:28, col:"#A5B4FC",  msg:"Matching by reference REF-0001 → ✓ matched" },
-    { t:35, col:"#A5B4FC",  msg:"Matching by reference REF-0002 → ✓ matched" },
-    { t:42, col:"#A5B4FC",  msg:"Matching by reference REF-0003 → ✓ matched" },
-    { t:52, col:"#FCD34D",  msg:"REF-0010 → amount mismatch [$250 vs $275] → exception" },
-    { t:62, col:"#F87171",  msg:"REF-9999 → no bank record → unmatched" },
-    { t:72, col:"#A5B4FC",  msg:"Matched 13/15 bank transactions" },
-    { t:82, col:"#F87171",  msg:"1 exception · 1 unmatched flagged" },
-    { t:90, col:"#4ADE80",  msg:"Reconciliation complete ✓" },
+    { t:5,  col:"#6B7280",  msg:"Loading bank transactions…" },
+    { t:15, col:"#6B7280",  msg:"Loading internal transactions…" },
+    { t:28, col:"#EF4444",  msg:"Matching by reference REF-0001 → ✓ matched" },
+    { t:35, col:"#EF4444",  msg:"Matching by reference REF-0002 → ✓ matched" },
+    { t:42, col:"#EF4444",  msg:"Matching by reference REF-0003 → ✓ matched" },
+    { t:52, col:"#D97706",  msg:"REF-0010 → amount mismatch [$250 vs $275] → exception" },
+    { t:62, col:"#DC2626",  msg:"REF-9999 → no bank record → unmatched" },
+    { t:72, col:"#EF4444",  msg:"Matched 13/15 bank transactions" },
+    { t:82, col:"#DC2626",  msg:"1 exception · 1 unmatched flagged" },
+    { t:90, col:"#16A34A",  msg:"Reconciliation complete ✓" },
   ];
   const visible = logs.filter(l => l.t <= progress);
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:0, height:"100%" }}>
-      <div style={{ padding:"16px 20px", borderBottom:"1px solid #1F1F1F", display:"flex", alignItems:"center", gap:12 }}>
-        <div style={{ width:10, height:10, borderRadius:"50%", background: phase === "done" ? "#4ADE80" : "#6366F1", animation: phase !== "done" ? "pulse 1s infinite" : "none" }} />
-        <div style={{ fontSize:14, fontWeight:700, color:"#DDD" }}>
+      <div style={{ padding:"16px 20px", borderBottom:"1px solid #E5E7EB", display:"flex", alignItems:"center", gap:12 }}>
+        <div style={{ width:10, height:10, borderRadius:"50%", background: phase === "done" ? "#16A34A" : "#EF4444", animation: phase !== "done" ? "pulse 1s infinite" : "none" }} />
+        <div style={{ fontSize:14, fontWeight:700, color:"#1F2937" }}>
           {phase === "scanning" ? "Scanning transactions…" : phase === "matching" ? "Matching records…" : phase === "flagging" ? "Flagging exceptions…" : "Reconciliation complete"}
         </div>
       </div>
-      <div style={{ height:3, background:"#1A1A1A", flexShrink:0 }}>
-        <div style={{ height:"100%", width:`${progress}%`, background:"linear-gradient(90deg,#6366F1,#4ADE80)", transition:"width .15s" }} />
+      <div style={{ height:3, background:"#F3F4F6", flexShrink:0 }}>
+        <div style={{ height:"100%", width:`${progress}%`, background:"linear-gradient(90deg,#EF4444,#16A34A)", transition:"width .15s" }} />
       </div>
       <div style={{ flex:1, padding:"12px 20px", overflowY:"auto", fontFamily:"monospace" }}>
         {visible.map((l, i) => (
           <div key={i} style={{ fontSize:12, color:l.col, marginBottom:6, animation:"fadeIn .3s both" }}>
-            <span style={{ color:"#333", marginRight:8 }}>{">"}</span>{l.msg}
+            <span style={{ color:"#D1D5DB", marginRight:8 }}>{">"}</span>{l.msg}
           </div>
         ))}
         {phase !== "done" && (
-          <div style={{ fontSize:12, color:"#444", animation:"pulse 1s infinite" }}>▌</div>
+          <div style={{ fontSize:12, color:"#9CA3AF", animation:"pulse 1s infinite" }}>▌</div>
         )}
       </div>
     </div>
@@ -101,17 +98,16 @@ function FrameResults({ progress }) {
   const show = progress > 20;
   return (
     <div style={{ display:"flex", flexDirection:"column", height:"100%" }}>
-      <div style={{ padding:"16px 20px", borderBottom:"1px solid #1F1F1F" }}>
-        <div style={{ fontSize:14, fontWeight:700, color:"#DDD" }}>Reconciliation Results</div>
-        <div style={{ fontSize:11, color:"#555", marginTop:2 }}>Nov 2024 · 15 bank  ↔  16 internal</div>
+      <div style={{ padding:"16px 20px", borderBottom:"1px solid #E5E7EB" }}>
+        <div style={{ fontSize:14, fontWeight:700, color:"#1F2937" }}>Reconciliation Results</div>
+        <div style={{ fontSize:11, color:"#9CA3AF", marginTop:2 }}>Nov 2024 · 15 bank  ↔  16 internal</div>
       </div>
       <div style={{ flex:1, padding:"16px 20px", display:"flex", flexDirection:"column", gap:14 }}>
-        {/* KPI cards */}
         <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10 }}>
           {[
-            { l:"Matched",    v:"13", c:"#4ADE80", bg:"#052E16" },
-            { l:"Exceptions", v:"1",  c:"#FCD34D", bg:"#2D1A00" },
-            { l:"Unmatched",  v:"1",  c:"#FCA5A5", bg:"#2D1515" },
+            { l:"Matched",    v:"13", c:"#16A34A", bg:"#F0FDF4" },
+            { l:"Exceptions", v:"1",  c:"#D97706", bg:"#FFFBEB" },
+            { l:"Unmatched",  v:"1",  c:"#DC2626", bg:"#FEF2F2" },
           ].map(m => (
             <div key={m.l} style={{ background:m.bg, border:`1px solid ${m.c}22`, borderRadius:10, padding:"12px 14px", opacity: show ? 1 : 0, transition:"opacity .5s", transitionDelay: m.l === "Matched" ? "0s" : m.l === "Exceptions" ? ".2s" : ".4s" }}>
               <div style={{ fontSize:10, color:m.c, fontWeight:700, textTransform:"uppercase", letterSpacing:".5px", marginBottom:6 }}>{m.l}</div>
@@ -119,23 +115,21 @@ function FrameResults({ progress }) {
             </div>
           ))}
         </div>
-        {/* Exception detail */}
         {progress > 55 && (
-          <div style={{ background:"#1A1000", border:"1px solid #FCD34D33", borderRadius:10, padding:"14px 16px", animation:"fadeIn .4s both" }}>
-            <div style={{ fontSize:11, fontWeight:700, color:"#FCD34D", marginBottom:8 }}>⚠ Exception — REF-0010</div>
+          <div style={{ background:"#FFFBEB", border:"1px solid rgba(217,119,6,.2)", borderRadius:10, padding:"14px 16px", animation:"fadeIn .4s both" }}>
+            <div style={{ fontSize:11, fontWeight:700, color:"#D97706", marginBottom:8 }}>⚠ Exception — REF-0010</div>
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, fontSize:12 }}>
-              <div style={{ color:"#666" }}>Bank amount: <span style={{ color:"#DDD", fontFamily:"monospace" }}>₹250.00</span></div>
-              <div style={{ color:"#666" }}>Internal: <span style={{ color:"#DDD", fontFamily:"monospace" }}>₹275.00</span></div>
-              <div style={{ color:"#666" }}>Difference: <span style={{ color:"#FCD34D", fontFamily:"monospace" }}>₹25.00</span></div>
-              <div style={{ color:"#666" }}>Action: <span style={{ color:"#A5B4FC" }}>Raise ticket →</span></div>
+              <div style={{ color:"#6B7280" }}>Bank amount: <span style={{ color:"#1F2937", fontFamily:"monospace" }}>₹250.00</span></div>
+              <div style={{ color:"#6B7280" }}>Internal: <span style={{ color:"#1F2937", fontFamily:"monospace" }}>₹275.00</span></div>
+              <div style={{ color:"#6B7280" }}>Difference: <span style={{ color:"#D97706", fontFamily:"monospace" }}>₹25.00</span></div>
+              <div style={{ color:"#6B7280" }}>Action: <span style={{ color:"#EF4444" }}>Raise ticket →</span></div>
             </div>
           </div>
         )}
-        {/* Unmatched */}
         {progress > 75 && (
-          <div style={{ background:"#1A0808", border:"1px solid #FCA5A533", borderRadius:10, padding:"14px 16px", animation:"fadeIn .4s both" }}>
-            <div style={{ fontSize:11, fontWeight:700, color:"#FCA5A5", marginBottom:8 }}>✗ Unmatched — REF-9999</div>
-            <div style={{ fontSize:12, color:"#666" }}>Internal transfer of <span style={{ color:"#DDD", fontFamily:"monospace" }}>₹2,500.00</span> has no matching bank entry.</div>
+          <div style={{ background:"#FEF2F2", border:"1px solid rgba(220,38,38,.15)", borderRadius:10, padding:"14px 16px", animation:"fadeIn .4s both" }}>
+            <div style={{ fontSize:11, fontWeight:700, color:"#DC2626", marginBottom:8 }}>✗ Unmatched — REF-9999</div>
+            <div style={{ fontSize:12, color:"#6B7280" }}>Internal transfer of <span style={{ color:"#1F2937", fontFamily:"monospace" }}>₹2,500.00</span> has no matching bank entry.</div>
           </div>
         )}
       </div>
@@ -157,29 +151,29 @@ function FrameLedger({ progress }) {
   const visible = Math.min(ledger.length, Math.floor((progress / 100) * ledger.length) + 1);
   return (
     <div style={{ display:"flex", flexDirection:"column", height:"100%" }}>
-      <div style={{ padding:"14px 20px", borderBottom:"1px solid #1F1F1F", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-        <div style={{ fontSize:14, fontWeight:700, color:"#DDD" }}>Bank Ledger — November 2024</div>
-        <div style={{ fontSize:12, color:"#4ADE80", fontWeight:600, fontFamily:"monospace" }}>Balance: ₹19,650.00</div>
+      <div style={{ padding:"14px 20px", borderBottom:"1px solid #E5E7EB", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+        <div style={{ fontSize:14, fontWeight:700, color:"#1F2937" }}>Bank Ledger — November 2024</div>
+        <div style={{ fontSize:12, color:"#16A34A", fontWeight:600, fontFamily:"monospace" }}>Balance: ₹19,650.00</div>
       </div>
       <div style={{ flex:1, overflowY:"auto" }}>
         <table style={{ width:"100%", borderCollapse:"collapse", fontSize:11 }}>
           <thead>
-            <tr style={{ borderBottom:"1px solid #1A1A1A" }}>
+            <tr style={{ borderBottom:"1px solid #E5E7EB" }}>
               {["Date","Description","Debit","Credit","Balance","Status"].map(h => (
-                <th key={h} style={{ padding:"8px 12px", color:"#444", fontWeight:700, textAlign: h === "Debit" || h === "Credit" || h === "Balance" ? "right" : "left", textTransform:"uppercase", letterSpacing:".4px", fontSize:10 }}>{h}</th>
+                <th key={h} style={{ padding:"8px 12px", color:"#9CA3AF", fontWeight:700, textAlign: h === "Debit" || h === "Credit" || h === "Balance" ? "right" : "left", textTransform:"uppercase", letterSpacing:".4px", fontSize:10 }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {ledger.slice(0, visible).map((r, i) => (
-              <tr key={i} style={{ borderBottom:"1px solid #111", animation:"slideIn .3s both" }}>
-                <td style={{ padding:"8px 12px", color:"#555", fontFamily:"monospace" }}>{r.date}</td>
-                <td style={{ padding:"8px 12px", color:"#AAA", maxWidth:130, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{r.desc}</td>
-                <td style={{ padding:"8px 12px", textAlign:"right", color:"#FCA5A5", fontFamily:"monospace" }}>{r.debit || "—"}</td>
-                <td style={{ padding:"8px 12px", textAlign:"right", color:"#4ADE80", fontFamily:"monospace" }}>{r.credit || "—"}</td>
-                <td style={{ padding:"8px 12px", textAlign:"right", fontWeight:700, color:"#DDD", fontFamily:"monospace" }}>{r.bal}</td>
+              <tr key={i} style={{ borderBottom:"1px solid #F3F4F6", animation:"slideIn .3s both" }}>
+                <td style={{ padding:"8px 12px", color:"#9CA3AF", fontFamily:"monospace" }}>{r.date}</td>
+                <td style={{ padding:"8px 12px", color:"#4B5563", maxWidth:130, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{r.desc}</td>
+                <td style={{ padding:"8px 12px", textAlign:"right", color:"#DC2626", fontFamily:"monospace" }}>{r.debit || "—"}</td>
+                <td style={{ padding:"8px 12px", textAlign:"right", color:"#16A34A", fontFamily:"monospace" }}>{r.credit || "—"}</td>
+                <td style={{ padding:"8px 12px", textAlign:"right", fontWeight:700, color:"#1F2937", fontFamily:"monospace" }}>{r.bal}</td>
                 <td style={{ padding:"8px 12px" }}>
-                  <span style={{ fontSize:10, fontWeight:700, padding:"2px 7px", borderRadius:100, background: r.s === "matched" ? "#052E16" : "#2D1A00", color: r.s === "matched" ? "#4ADE80" : "#FCD34D" }}>{r.s}</span>
+                  <span style={{ fontSize:10, fontWeight:700, padding:"2px 7px", borderRadius:100, background: r.s === "matched" ? "#F0FDF4" : "#FFFBEB", color: r.s === "matched" ? "#16A34A" : "#D97706" }}>{r.s}</span>
                 </td>
               </tr>
             ))}
@@ -201,61 +195,58 @@ function FrameDashboard({ progress }) {
 
   return (
     <div style={{ display:"flex", flexDirection:"column", height:"100%", padding:"16px 20px", gap:14, overflowY:"auto" }}>
-      {/* KPIs */}
       <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8 }}>
         {[
-          { l:"Revenue",   v:"₹1.49L", c:"#60A5FA", show:15 },
-          { l:"Matched",   v:"87%",    c:"#4ADE80", show:25 },
-          { l:"Variance",  v:"₹0.00",  c:"#4ADE80", show:35 },
-          { l:"Tickets",   v:"2 open", c:"#FCD34D", show:45 },
+          { l:"Revenue",   v:"₹1.49L", c:"#2563EB", show:15 },
+          { l:"Matched",   v:"87%",    c:"#16A34A", show:25 },
+          { l:"Variance",  v:"₹0.00",  c:"#16A34A", show:35 },
+          { l:"Tickets",   v:"2 open", c:"#D97706", show:45 },
         ].map(m => (
-          <div key={m.l} style={{ background:"#0D0D0D", border:"1px solid #1A1A1A", borderRadius:8, padding:"10px 12px", opacity: show(m.show) ? 1 : 0, transition:"opacity .5s", transitionDelay:".1s" }}>
-            <div style={{ fontSize:9, color:"#444", fontWeight:700, textTransform:"uppercase", letterSpacing:".4px", marginBottom:6 }}>{m.l}</div>
+          <div key={m.l} style={{ background:"#F9FAFB", border:"1px solid #E5E7EB", borderRadius:8, padding:"10px 12px", opacity: show(m.show) ? 1 : 0, transition:"opacity .5s", transitionDelay:".1s" }}>
+            <div style={{ fontSize:9, color:"#9CA3AF", fontWeight:700, textTransform:"uppercase", letterSpacing:".4px", marginBottom:6 }}>{m.l}</div>
             <div style={{ fontSize:16, fontWeight:800, color:m.c, letterSpacing:"-.5px" }}>{m.v}</div>
           </div>
         ))}
       </div>
 
-      {/* Chart */}
       {show(50) && (
-        <div style={{ background:"#0D0D0D", border:"1px solid #1A1A1A", borderRadius:10, padding:"14px", animation:"fadeIn .5s both" }}>
+        <div style={{ background:"#F9FAFB", border:"1px solid #E5E7EB", borderRadius:10, padding:"14px", animation:"fadeIn .5s both" }}>
           <div style={{ display:"flex", justifyContent:"space-between", marginBottom:10 }}>
-            <div style={{ fontSize:12, fontWeight:700, color:"#DDD" }}>Revenue Trend</div>
-            <div style={{ fontSize:11, color:"#4ADE80", fontWeight:600 }}>↑ 13.4%</div>
+            <div style={{ fontSize:12, fontWeight:700, color:"#1F2937" }}>Revenue Trend</div>
+            <div style={{ fontSize:11, color:"#16A34A", fontWeight:600 }}>↑ 13.4%</div>
           </div>
           <svg viewBox={`0 0 ${W} ${H}`} style={{ width:"100%", height:80 }}>
             <defs>
               <linearGradient id="dg" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#6366F1" stopOpacity=".3" />
-                <stop offset="100%" stopColor="#6366F1" stopOpacity="0" />
+                <stop offset="0%" stopColor="#EF4444" stopOpacity=".2" />
+                <stop offset="100%" stopColor="#EF4444" stopOpacity="0" />
               </linearGradient>
             </defs>
             <path d={area} fill="url(#dg)" />
-            <path d={line} fill="none" stroke="#6366F1" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-            {pts.map((p, i) => i === pts.length - 1 && <circle key={i} cx={p.x} cy={p.y} r="4" fill="#111" stroke="#6366F1" strokeWidth="2" />)}
+            <path d={line} fill="none" stroke="#EF4444" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+            {pts.map((p, i) => i === pts.length - 1 && <circle key={i} cx={p.x} cy={p.y} r="4" fill="#fff" stroke="#EF4444" strokeWidth="2" />)}
           </svg>
           <div style={{ display:"flex", justifyContent:"space-around", marginTop:4 }}>
-            {["Jul","Aug","Sep","Oct","Nov","Dec"].map(m => <span key={m} style={{ fontSize:9, color:"#333", fontWeight:600 }}>{m}</span>)}
+            {["Jul","Aug","Sep","Oct","Nov","Dec"].map(m => <span key={m} style={{ fontSize:9, color:"#D1D5DB", fontWeight:600 }}>{m}</span>)}
           </div>
         </div>
       )}
 
-      {/* Status */}
       {show(70) && (
-        <div style={{ background:"#0D0D0D", border:"1px solid #1A1A1A", borderRadius:10, padding:"14px", animation:"fadeIn .5s both" }}>
-          <div style={{ fontSize:12, fontWeight:700, color:"#DDD", marginBottom:10 }}>Status Breakdown</div>
+        <div style={{ background:"#F9FAFB", border:"1px solid #E5E7EB", borderRadius:10, padding:"14px", animation:"fadeIn .5s both" }}>
+          <div style={{ fontSize:12, fontWeight:700, color:"#1F2937", marginBottom:10 }}>Status Breakdown</div>
           {[
-            { l:"matched",    pct:87, c:"#4ADE80" },
-            { l:"pending",    pct:6,  c:"#888"    },
-            { l:"exception",  pct:4,  c:"#FCD34D" },
-            { l:"unmatched",  pct:3,  c:"#FCA5A5" },
+            { l:"matched",    pct:87, c:"#16A34A" },
+            { l:"pending",    pct:6,  c:"#6B7280" },
+            { l:"exception",  pct:4,  c:"#D97706" },
+            { l:"unmatched",  pct:3,  c:"#DC2626" },
           ].map(s => (
             <div key={s.l} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
               <span style={{ fontSize:10, color:s.c, fontWeight:600, width:72, flexShrink:0 }}>{s.l}</span>
-              <div style={{ flex:1, height:4, background:"#1A1A1A", borderRadius:2 }}>
+              <div style={{ flex:1, height:4, background:"#E5E7EB", borderRadius:2 }}>
                 <div style={{ width:`${s.pct}%`, height:"100%", background:s.c, borderRadius:2, transition:"width 1s" }} />
               </div>
-              <span style={{ fontSize:10, color:"#444", fontFamily:"monospace", width:28, textAlign:"right" }}>{s.pct}%</span>
+              <span style={{ fontSize:10, color:"#9CA3AF", fontFamily:"monospace", width:28, textAlign:"right" }}>{s.pct}%</span>
             </div>
           ))}
         </div>
@@ -285,7 +276,6 @@ export default function DemoPlayer() {
       if (pct < 100) {
         rafRef.current = requestAnimationFrame(tick);
       } else {
-        // auto-advance
         setTimeout(() => {
           setFrameIdx(i => (i + 1) % FRAMES.length);
           setProgress(0);
@@ -305,36 +295,35 @@ export default function DemoPlayer() {
     frame.id === "ledger"    ? FrameLedger    : FrameDashboard;
 
   return (
-    <div style={{ width:"100%", maxWidth:900, margin:"0 auto", borderRadius:16, overflow:"hidden", border:"1px solid #1F1F1F", background:"#0D0D0D", boxShadow:"0 32px 80px rgba(0,0,0,.7)" }}>
+    <div style={{ width:"100%", maxWidth:900, margin:"0 auto", borderRadius:16, overflow:"hidden", border:"1px solid #E5E7EB", background:"#FFFFFF", boxShadow:"0 20px 60px rgba(0,0,0,.08)" }}>
       {/* Browser chrome */}
-      <div style={{ height:38, background:"#141414", borderBottom:"1px solid #1A1A1A", display:"flex", alignItems:"center", padding:"0 14px", gap:10 }}>
+      <div style={{ height:38, background:"#F9FAFB", borderBottom:"1px solid #E5E7EB", display:"flex", alignItems:"center", padding:"0 14px", gap:10 }}>
         <div style={{ display:"flex", gap:5 }}>
           {["#FF5F57","#FEBC2E","#28C840"].map(c => <div key={c} style={{ width:10, height:10, borderRadius:"50%", background:c }} />)}
         </div>
-        <div style={{ flex:1, maxWidth:240, margin:"0 auto", background:"#0A0A0A", borderRadius:5, height:20, display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, color:"#444", gap:6 }}>
-          <div style={{ width:6, height:6, borderRadius:"50%", background:"#4ADE80", animation:"pulse 2.5s infinite" }} />
-          app.reconciler.io · demo
+        <div style={{ flex:1, maxWidth:240, margin:"0 auto", background:"#FFFFFF", borderRadius:5, height:20, border:"1px solid #E5E7EB", display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, color:"#9CA3AF", gap:6 }}>
+          <div style={{ width:6, height:6, borderRadius:"50%", background:"#16A34A", animation:"pulse 2.5s infinite" }} />
+          app.reconciler.io
         </div>
-        {/* Play/pause */}
         <button onClick={() => setPlaying(p => !p)}
-          style={{ background:"#1A1A1A", border:"1px solid #2A2A2A", borderRadius:5, color:"#888", fontSize:12, padding:"3px 10px", lineHeight:1 }}>
+          style={{ background:"#FFFFFF", border:"1px solid #E5E7EB", borderRadius:5, color:"#6B7280", fontSize:12, padding:"3px 10px", lineHeight:1 }}>
           {playing ? "⏸" : "▶"}
         </button>
       </div>
 
       {/* Step tabs */}
-      <div style={{ display:"flex", borderBottom:"1px solid #1A1A1A", background:"#111", overflowX:"auto" }}>
+      <div style={{ display:"flex", borderBottom:"1px solid #E5E7EB", background:"#FAFAFA", overflowX:"auto" }}>
         {FRAMES.map((f, i) => (
           <button key={f.id} onClick={() => go(i)}
-            style={{ flex:1, padding:"10px 12px", fontSize:11, fontWeight: i === frameIdx ? 700 : 400, color: i === frameIdx ? "#A5B4FC" : "#444", background: i === frameIdx ? "rgba(99,102,241,.1)" : "transparent", border:"none", borderBottom: i === frameIdx ? "2px solid #6366F1" : "2px solid transparent", transition:"all .2s", whiteSpace:"nowrap" }}>
+            style={{ flex:1, padding:"10px 12px", fontSize:11, fontWeight: i === frameIdx ? 700 : 400, color: i === frameIdx ? "#EF4444" : "#9CA3AF", background: i === frameIdx ? "rgba(239,68,68,.05)" : "transparent", border:"none", borderBottom: i === frameIdx ? "2px solid #EF4444" : "2px solid transparent", transition:"all .2s", whiteSpace:"nowrap" }}>
             {f.label}
           </button>
         ))}
       </div>
 
       {/* Progress strip */}
-      <div style={{ height:2, background:"#1A1A1A" }}>
-        <div style={{ height:"100%", width:`${progress}%`, background:"linear-gradient(90deg,#6366F1,#8B5CF6)", transition:"width .05s" }} />
+      <div style={{ height:2, background:"#F3F4F6" }}>
+        <div style={{ height:"100%", width:`${progress}%`, background:"linear-gradient(90deg,#EF4444,#F87171)", transition:"width .05s" }} />
       </div>
 
       {/* Frame area */}
@@ -343,14 +332,14 @@ export default function DemoPlayer() {
       </div>
 
       {/* Footer */}
-      <div style={{ padding:"10px 20px", borderTop:"1px solid #1A1A1A", display:"flex", justifyContent:"space-between", alignItems:"center", background:"#0D0D0D" }}>
+      <div style={{ padding:"10px 20px", borderTop:"1px solid #E5E7EB", display:"flex", justifyContent:"space-between", alignItems:"center", background:"#FAFAFA" }}>
         <div style={{ display:"flex", gap:6 }}>
           {FRAMES.map((f, i) => (
             <div key={f.id} onClick={() => go(i)}
-              style={{ width: i === frameIdx ? 20 : 6, height:6, borderRadius:3, background: i === frameIdx ? "#6366F1" : i < frameIdx ? "#4ADE80" : "#222", cursor:"pointer", transition:"all .3s" }} />
+              style={{ width: i === frameIdx ? 20 : 6, height:6, borderRadius:3, background: i === frameIdx ? "#EF4444" : i < frameIdx ? "#16A34A" : "#E5E7EB", cursor:"pointer", transition:"all .3s" }} />
           ))}
         </div>
-        <span style={{ fontSize:11, color:"#444" }}>
+        <span style={{ fontSize:11, color:"#9CA3AF" }}>
           Step {frameIdx + 1} of {FRAMES.length} · {frame.label.split("  ")[1]}
         </span>
       </div>
