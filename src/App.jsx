@@ -177,7 +177,7 @@ function Sidebar({ tab, setTab, user, onLogout }) {
             <span style={{ fontSize: 14, fontWeight: 800, color: "#fff" }}>R</span>
           </div>
           <div>
-            <div style={{ fontSize: 15, fontWeight: 800, color: "#111827", letterSpacing: "-.4px" }}>Reconciler</div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: "#111827", letterSpacing: "-.4px" }}>Relay</div>
             <div style={{ fontSize: 10, color: "#9CA3AF", fontWeight: 500 }}>v3.0 · {user?.role}</div>
           </div>
         </div>
@@ -927,7 +927,7 @@ function AuthPage({ onLogin }) {
           <div style={{ width: 52, height: 52, background: "linear-gradient(135deg,#EF4444,#F87171)", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px", boxShadow: "0 8px 24px rgba(239,68,68,.25)", animation: "glow 3s ease-in-out infinite" }}>
             <span style={{ fontSize: 24, fontWeight: 800, color: "#fff" }}>R</span>
           </div>
-          <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: "-1px", color: "#111827" }}>Reconciler</div>
+          <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: "-1px", color: "#111827" }}>Relay</div>
           <div style={{ fontSize: 13, color: "#6B7280", marginTop: 4 }}>Financial transaction reconciliation platform</div>
         </div>
 
@@ -1063,7 +1063,7 @@ function Landing({ onEnter }) {
           <div style={{ width: 30, height: 30, background: "linear-gradient(135deg,#EF4444,#F87171)", borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <span style={{ fontSize: 14, fontWeight: 800, color: "#fff" }}>R</span>
           </div>
-          <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: "-.4px", color: "#111827" }}>Reconciler</span>
+          <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: "-.4px", color: "#111827" }}>Relay</span>
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           <button style={{ background: "transparent", color: "#6B7280", border: "none", fontSize: 14, fontWeight: 500 }} onClick={onEnter}>Sign in</button>
@@ -1121,7 +1121,7 @@ function Landing({ onEnter }) {
           See it in action
         </h2>
         <p className="reveal rd1" style={{ fontSize: 16, color: "#6B7280", marginBottom: 48, maxWidth: 480, margin: "0 auto 48px" }}>
-          Watch how Reconciler processes a real CSV import, runs the matching engine, and generates a full reconciliation report in under 30 seconds.
+          Watch how Relay processes a real CSV import, runs the matching engine, and generates a full reconciliation report in under 30 seconds.
         </p>
 
         <div className="reveal rd2">
@@ -1187,7 +1187,7 @@ function Landing({ onEnter }) {
             <div style={{ width: 28, height: 28, background: "linear-gradient(135deg,#EF4444,#F87171)", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <span style={{ fontSize: 12, fontWeight: 800, color: "#fff" }}>R</span>
             </div>
-            <span style={{ fontSize: 15, fontWeight: 700, color: "#F9FAFB" }}>Reconciler</span>
+            <span style={{ fontSize: 15, fontWeight: 700, color: "#F9FAFB" }}>Relay</span>
           </div>
           <div style={{ display: "flex", gap: 28 }}>
             {[{ l: "Product", href: "#" }, { l: "Pricing", href: "#" }, { l: "Support", href: "#" }].map(item => (
@@ -1195,7 +1195,7 @@ function Landing({ onEnter }) {
                 onMouseEnter={e => e.target.style.color = "#F9FAFB"} onMouseLeave={e => e.target.style.color = "#CBD5E0"}>{item.l}</a>
             ))}
           </div>
-          <div style={{ fontSize: 12, color: "#A0AEC0" }}>© 2025 Reconciler. All rights reserved.</div>
+          <div style={{ fontSize: 12, color: "#A0AEC0" }}>© 2025 Relay. All rights reserved.</div>
         </div>
       </footer>
     </div>

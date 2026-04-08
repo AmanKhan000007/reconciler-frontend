@@ -1,7 +1,7 @@
 {
   "name": "reconciler-frontend",
   "version": "1.0.0",
-  "description": "Reconciler — Financial Transaction Reconciliation Platform",
+  "description": "Relay — Financial Transaction Reconciliation Platform",
   "private": true,
   "type": "module",
   "engines": {
