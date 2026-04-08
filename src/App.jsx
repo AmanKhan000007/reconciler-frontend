@@ -235,7 +235,7 @@ function Dashboard({ user }) {
     <PageShell title="Dashboard" sub={`Welcome back, ${user?.name?.split(" ")[0]}`}>
       {/* KPI row */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 20 }}>
-        <Metric icon="₹" label="Bank Balance"    value={fmt(summary?.bank_balance)}     color="#2563EB" sub="Total bank transactions" />
+        <Metric icon="$" label="Bank Balance"    value={fmt(summary?.bank_balance)}     color="#2563EB" sub="Total bank transactions" />
         <Metric icon="⇄" label="Internal Balance" value={fmt(summary?.internal_balance)} color="#7C3AED" sub="Total internal records" />
         <Metric icon="△" label="Variance"         value={fmt(summary?.variance)}         color={Math.abs(summary?.variance || 0) < 1 ? "#16A34A" : "#DC2626"} sub="Bank vs internal" />
         <Metric icon="%" label="Reconciled"       value={`${rate}%`} color="#16A34A"     sub={`${summary?.by_status?.matched || 0} of ${summary?.total || 0} matched`} />
@@ -314,7 +314,7 @@ function Transactions({ toast }) {
   const [filter, setFilter] = useState({});
   const [showAdd, setShowAdd] = useState(false);
   const [showImport, setShowImport] = useState(false);
-  const [form, setForm] = useState({ date: "", description: "", amount: "", currency: "INR", reference: "", source: "bank", category: "" });
+  const [form, setForm] = useState({ date: "", description: "", amount: "", currency: "USD", reference: "", source: "bank", category: "" });
   const [importFile, setImportFile] = useState(null);
   const [importSource, setImportSource] = useState("bank");
   const [saving, setSaving] = useState(false);
@@ -333,7 +333,7 @@ function Transactions({ toast }) {
     try {
       await API.createTransaction({ ...form, amount: parseFloat(form.amount) });
       toast("Transaction created"); setShowAdd(false);
-      setForm({ date: "", description: "", amount: "", currency: "INR", reference: "", source: "bank", category: "" });
+      setForm({ date: "", description: "", amount: "", currency: "USD", reference: "", source: "bank", category: "" });
       load();
     } catch (e) { toast(e.message, "error"); }
     finally { setSaving(false); }
@@ -830,7 +830,7 @@ function Settings({ user, setUser, toast }) {
             <div><label>Email</label><input className="inp" value={user?.email || ""} disabled style={{ opacity: .5 }} /></div>
             <div><label>Currency</label>
               <select className="inp" value={currency} onChange={e => setCurrency(e.target.value)}>
-                {["USD","INR","EUR","GBP","AED","SGD"].map(c => <option key={c} value={c}>{c}</option>)}
+                {["USD","USD","EUR","GBP","AED","SGD"].map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <button className="btn-primary" style={{ width: "fit-content" }} onClick={saveProfile} disabled={saving}>{saving ? "Saving…" : "Save Profile"}</button>
@@ -981,7 +981,7 @@ function HeroDashboardPreview() {
       <div style={{ padding: "12px 16px", display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
         {[
           { l: "Matched", v: "94%", c: "#16A34A" },
-          { l: "Variance", v: "₹0.00", c: "#16A34A" },
+          { l: "Variance", v: "$0.00", c: "#16A34A" },
           { l: "Pending", v: "12", c: "#D97706" },
         ].map(m => (
           <div key={m.l} style={{ background: "#F9FAFB", borderRadius: 8, padding: "8px 10px", border: "1px solid #F3F4F6" }}>
@@ -1006,9 +1006,9 @@ function HeroDashboardPreview() {
       {/* Mini table */}
       <div style={{ padding: "0 16px 12px" }}>
         {[
-          { ref: "REF-0042", desc: "Payment — Acme Corp", status: "matched", amt: "-₹12,400" },
-          { ref: "REF-0043", desc: "Invoice — Delta Inc", status: "matched", amt: "+₹21,000" },
-          { ref: "REF-0044", desc: "AWS Subscription", status: "pending", amt: "-₹3,200" },
+          { ref: "REF-0042", desc: "Payment — Acme Corp", status: "matched", amt: "-$12,400" },
+          { ref: "REF-0043", desc: "Invoice — Delta Inc", status: "matched", amt: "+$21,000" },
+          { ref: "REF-0044", desc: "AWS Subscription", status: "pending", amt: "-$3,200" },
         ].map(r => (
           <div key={r.ref} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0", borderTop: "1px solid #F3F4F6", fontSize: 11 }}>
             <span style={{ fontFamily: "monospace", color: "#9CA3AF", width: 64 }}>{r.ref}</span>
@@ -1205,7 +1205,7 @@ function Landing({ onEnter }) {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function fmt(n) {
   if (n == null) return "—";
-  return (n < 0 ? "-" : "") + "₹" + Math.abs(n).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return (n < 0 ? "-" : "") + "$" + Math.abs(n).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 // ── ROOT ──────────────────────────────────────────────────────────────────────
