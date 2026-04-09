@@ -1,18 +1,27 @@
-const BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const BASE = import.meta.env.VITE_API_URL || (import.meta.env.MODE === 'development' ? 'http://localhost:5000' : '/api');
 
 const getToken = () => localStorage.getItem('rec_token');
 
 async function req(method, path, body, isFormData = false) {
+  if (!BASE) {
+    throw new Error('Backend API URL is not configured. Set VITE_API_URL in the frontend environment.');
+  }
+
   const headers = {};
   if (!isFormData) headers['Content-Type'] = 'application/json';
   const token = getToken();
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
-  const res = await fetch(`${BASE}${path}`, {
-    method,
-    headers,
-    body: isFormData ? body : body ? JSON.stringify(body) : undefined,
-  });
+  let res;
+  try {
+    res = await fetch(`${BASE}${path}`, {
+      method,
+      headers,
+      body: isFormData ? body : body ? JSON.stringify(body) : undefined,
+    });
+  } catch (err) {
+    throw new Error(`Unable to connect to backend API at ${BASE}: ${err.message}`);
+  }
 
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.message || `HTTP ${res.status}`);
