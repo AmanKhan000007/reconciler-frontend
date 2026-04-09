@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+ import { useState, useEffect, useRef, useCallback } from "react";
 import * as API from "./api/index.js";
 import DemoPlayer from "./components/DemoPlayer.jsx";
 
@@ -488,7 +488,7 @@ function Reconcile({ toast }) {
             </div>
             <Card>
               <div style={{ fontSize: 13, fontWeight: 700, color: "#374151", marginBottom: 14 }}>Summary</div>
-              <pre style={{ fontFamily: "Geist Mono", fontSize: 12, color: "#6B7280", background: "#F9FAFB", borderRadius: 8, padding: 16, overflow: "auto", border: "1px solid #E5E7EB" }}>
+              <pre style={{ fontFamily: "Geist Mono", fontSize: 12, color: "#6B7280", background: "#F9FAFB", borderRadius: 8, padding: 16, overflow: "auto", border: "1px solid #E5E7EB", maxHeight: 320, whiteSpace: "pre-wrap" }}>
                 {JSON.stringify(result, null, 2)}
               </pre>
             </Card>
@@ -861,7 +861,7 @@ function Settings({ user, setUser, toast }) {
 // ── Page Shell ────────────────────────────────────────────────────────────────
 function PageShell({ title, sub, actions, children }) {
   return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       <div style={{ padding: "24px 28px 20px", borderBottom: "1px solid #E5E7EB", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
         <div>
           <h1 style={{ fontSize: 20, fontWeight: 800, letterSpacing: "-.5px", color: "#111827" }}>{title}</h1>
@@ -869,12 +869,31 @@ function PageShell({ title, sub, actions, children }) {
         </div>
         {actions}
       </div>
-      <div style={{ flex: 1, overflowY: "auto", padding: "24px 28px", background: "#F9FAFB" }}>{children}</div>
+      <div style={{ flex: 1, overflowY: "auto", padding: "24px 28px 40px", background: "#F9FAFB" }}>{children}</div>
     </div>
   );
 }
 
-function Footer() {
+function Footer({ compact = false }) {
+  if (compact) {
+    return (
+      <footer style={{ flexShrink: 0, padding: "8px 20px", borderTop: "1px solid #E5E7EB", background: "#FFFFFF", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ width: 20, height: 20, background: "linear-gradient(135deg,#EF4444,#F87171)", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ fontSize: 10, fontWeight: 800, color: "#fff" }}>R</span>
+          </div>
+          <span style={{ fontSize: 12, fontWeight: 700, color: "#374151" }}>Relay</span>
+        </div>
+        <div style={{ display: "flex", gap: 16 }}>
+          {[{ l: "Product", href: "#" }, { l: "Pricing", href: "#" }, { l: "Support", href: "#" }].map(item => (
+            <a key={item.l} href={item.href} style={{ fontSize: 11, color: "#9CA3AF", transition: "color .2s" }}
+              onMouseEnter={e => e.currentTarget.style.color = "#374151"} onMouseLeave={e => e.currentTarget.style.color = "#9CA3AF"}>{item.l}</a>
+          ))}
+        </div>
+        <div style={{ fontSize: 11, color: "#D1D5DB" }}>© 2025 Relay. All rights reserved.</div>
+      </footer>
+    );
+  }
   return (
     <footer style={{ flexShrink: 0, padding: "28px 6% 24px", borderTop: "1px solid rgba(255,255,255,.08)", background: "#2D3748" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 20 }}>
@@ -944,30 +963,30 @@ function AppShell({ user, setUser }) {
     <div style={{ display: "flex", height: "100vh", overflow: "hidden", background: "#FFFFFF" }}>
       <Sidebar tab={tab} setTab={setTab} user={user} onLogout={logout} />
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-        <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
-          <div style={{ display: tab === "dashboard" ? "flex" : "none", flex: 1, flexDirection: "column", overflow: "auto", minHeight: 0 }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          <div style={{ display: tab === "dashboard" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
             <Dashboard {...props} />
           </div>
-          <div style={{ display: tab === "transactions" ? "flex" : "none", flex: 1, flexDirection: "column", overflow: "auto", minHeight: 0 }}>
+          <div style={{ display: tab === "transactions" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
             <Transactions {...props} />
           </div>
-          <div style={{ display: tab === "reconcile" ? "flex" : "none", flex: 1, flexDirection: "column", overflow: "auto", minHeight: 0 }}>
+          <div style={{ display: tab === "reconcile" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
             <Reconcile {...props} />
           </div>
-          <div style={{ display: tab === "ledger" ? "flex" : "none", flex: 1, flexDirection: "column", overflow: "auto", minHeight: 0 }}>
+          <div style={{ display: tab === "ledger" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
             <Ledger {...props} />
           </div>
-          <div style={{ display: tab === "tickets" ? "flex" : "none", flex: 1, flexDirection: "column", overflow: "auto", minHeight: 0 }}>
+          <div style={{ display: tab === "tickets" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
             <Tickets {...props} />
           </div>
-          <div style={{ display: tab === "admin" && user?.role === "admin" ? "flex" : "none", flex: 1, flexDirection: "column", overflow: "auto", minHeight: 0 }}>
+          <div style={{ display: tab === "admin" && user?.role === "admin" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
             {user?.role === "admin" && <Admin {...props} />}
           </div>
-          <div style={{ display: tab === "settings" ? "flex" : "none", flex: 1, flexDirection: "column", overflow: "auto", minHeight: 0 }}>
+          <div style={{ display: tab === "settings" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
             <Settings {...props} setUser={setUser} />
           </div>
         </div>
-        <Footer />
+        <Footer compact />
       </div>
       {toasts.map(t => <Toast key={t.id} msg={t.msg} type={t.type} onClose={() => setToasts(p => p.filter(x => x.id !== t.id))} />)}
     </div>
