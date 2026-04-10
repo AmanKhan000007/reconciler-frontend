@@ -42,6 +42,7 @@ export const getTransactions = (params = {}) => {
 };
 export const createTransaction = (data) => req('POST', '/transactions', data);
 export const deleteTransaction = (id)   => req('DELETE', `/transactions/${id}`);
+export const updateTransaction = (id, data) => req('PATCH', `/transactions/${id}`, data);
 export const importCSV = (file, source) => {
   const fd = new FormData();
   fd.append('file', file);
@@ -67,3 +68,9 @@ export const deleteAdminUser  = (id) => req('DELETE', `/admin/users/${id}`);
 export const getAdminAnalytics = () => req('GET', '/admin/analytics');
 export const getMonitoring    = () => req('GET', '/admin/monitoring');
 export const getAuditLog      = (page = 1) => req('GET', `/admin/audit?page=${page}`);
+
+// ── Team ──────────────────────────────────────────────────────
+export const getTeamMembers  = () => req('GET', '/team');
+export const inviteTeamMember = (email, role) => req('POST', '/team/invite', { email, role });
+export const updateTeamMemberRole = (id, role) => req('PATCH', `/team/${id}/role`, { role });
+export const removeTeamMember = (id) => req('DELETE', `/team/${id}`);

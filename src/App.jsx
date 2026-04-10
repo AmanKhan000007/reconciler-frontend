@@ -161,6 +161,7 @@
    { id: "dashboard",    icon: "⊞", label: "Dashboard" },
    { id: "transactions", icon: "⇄", label: "Transactions" },
    { id: "reconcile",   icon: "◎", label: "Reconcile" },
+   { id: "team",         icon: "◉", label: "Team" },
    { id: "ledger",      icon: "≡", label: "Ledger" },
    { id: "tickets",     icon: "◫", label: "Tickets" },
    { id: "admin",       icon: "⚙", label: "Admin", adminOnly: true },
@@ -308,7 +309,7 @@
  }
  
  // ── Transactions ─────────────────────────────────────────────────────────────
- function Transactions({ toast }) {
+function Transactions({ toast }) {
    const [txs, setTxs] = useState([]);
    const [loading, setLoading] = useState(true);
    const [filter, setFilter] = useState({});
@@ -318,13 +319,15 @@
    const [importFile, setImportFile] = useState(null);
    const [importSource, setImportSource] = useState("bank");
    const [saving, setSaving] = useState(false);
+   const [editingTx, setEditingTx] = useState(null);
+   const [editForm, setEditForm] = useState({ category: "", note: "" });
  
    const load = useCallback(async () => {
      setLoading(true);
      try { setTxs(await API.getTransactions(filter)); }
      catch (e) { toast(e.message, "error"); }
      finally { setLoading(false); }
-   }, [filter]);
+   }, [filter,toast]);
  
    useEffect(() => { load(); }, [load]);
  
@@ -339,12 +342,31 @@
      finally { setSaving(false); }
    };
  
-   const handleDelete = async (id) => {
+  const handleDelete = async (id) => {
      if (!confirm("Delete this transaction?")) return;
      try { await API.deleteTransaction(id); toast("Deleted"); load(); }
      catch (e) { toast(e.message, "error"); }
    };
- 
+   
+   const openEdit = (tx) => {
+    setEditingTx(tx);
+    setEditForm({ category: tx.category || "", note: tx.note || "" });
+  };
+
+  const handleUpdate = async () => {
+    if (!editingTx?._id) return;
+    setSaving(true);
+    try {
+      await API.updateTransaction(editingTx._id, { category: editForm.category, note: editForm.note });
+      toast("Transaction updated");
+      setEditingTx(null);
+      load();
+    } catch (e) {
+      toast(e.message, "error");
+    } finally {
+      setSaving(false);
+    }
+  };
    const handleImport = async () => {
      if (!importFile) return;
      setSaving(true);
@@ -381,7 +403,7 @@
          {loading ? <div style={{ padding: 40, textAlign: "center" }}><Spinner /></div> : (
            <div style={{ overflowX: "auto" }}>
              <table>
-               <thead><tr><th>Date</th><th>Description</th><th>Source</th><th>Category</th><th>Reference</th><th className="mono" style={{ textAlign: "right" }}>Amount</th><th>Status</th><th /></tr></thead>
+               <thead><tr><th>Date</th><th>Description</th><th>Source</th><th>Category</th><th>Reference</th><th className="mono" style={{ textAlign: "right" }}>Amount</th><th>Status</th><th>Actions</th><th /></tr></thead>
                <tbody>
                  {txs.length === 0 ? <tr><td colSpan={8} style={{ textAlign: "center", padding: 40, color: "#9CA3AF" }}>No transactions found</td></tr> :
                    txs.map(t => (
@@ -393,7 +415,10 @@
                        <td className="mono" style={{ color: "#9CA3AF", fontSize: 12 }}>{t.reference || "—"}</td>
                        <td className="mono" style={{ textAlign: "right", color: t.amount >= 0 ? "#16A34A" : "#DC2626", fontWeight: 600 }}>{t.currency} {t.amount?.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</td>
                        <td><Tag label={t.status} /></td>
-                       <td><button className="btn-danger" style={{ padding: "4px 10px", fontSize: 11 }} onClick={() => handleDelete(t._id)}>Delete</button></td>
+                        <td style={{ display: "flex", gap: 6 }}>
+                         <button className="btn-ghost" style={{ padding: "4px 10px", fontSize: 11 }} onClick={() => openEdit(t)}>Edit</button>
+                         <button className="btn-danger" style={{ padding: "4px 10px", fontSize: 11 }} onClick={() => handleDelete(t._id)}>Delete</button>
+                       </td>
                      </tr>
                    ))}
                </tbody>
@@ -426,7 +451,7 @@
          </Modal>
        )}
  
-       {showImport && (
+      {showImport && (
          <Modal title="Import CSV" onClose={() => setShowImport(false)}>
            <div style={{ display: "grid", gap: 14 }}>
              <div style={{ background: "#F9FAFB", borderRadius: 8, padding: 16, border: "1px solid #E5E7EB", fontSize: 12, color: "#6B7280", lineHeight: 1.7 }}>
@@ -447,15 +472,109 @@
              </div>
            </div>
          </Modal>
-       )}
-     </PageShell>
-   );
- }
+        )}
+
+      {editingTx && (
+        <Modal title="Edit Transaction" onClose={() => setEditingTx(null)}>
+          <div style={{ display: "grid", gap: 14 }}>
+            <div><label>Category</label><input className="inp" value={editForm.category} onChange={e => setEditForm(p => ({ ...p, category: e.target.value }))} placeholder="e.g. transfer" /></div>
+            <div><label>Note</label><textarea className="inp" rows={4} value={editForm.note} onChange={e => setEditForm(p => ({ ...p, note: e.target.value }))} placeholder="Add reconciliation context..." style={{ resize: "vertical" }} /></div>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button className="btn-ghost" style={{ flex: 1 }} onClick={() => setEditingTx(null)}>Cancel</button>
+              <button className="btn-primary" style={{ flex: 1 }} onClick={handleUpdate} disabled={saving}>{saving ? "Saving…" : "Save Changes"}</button>
+            </div>
+          </div>
+        </Modal>
+      )}
+    </PageShell>
+  );
+}
  
  // ── Reconcile ─────────────────────────────────────────────────────────────────
- function Reconcile({ toast }) {
-   const [result, setResult] = useState(null);
-   const [running, setRunning] = useState(false);
+function Reconcile({ toast }) {
+  const [result, setResult] = useState(null);
+  const [running, setRunning] = useState(false);
+
+  const downloadFile = (name, content, type) => {
+    const blob = new Blob([content], { type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const buildSimplePdf = (rawText) => {
+    const escapePdfText = (value) => value.replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
+    const lines = rawText.split("\n");
+    const textOps = lines
+      .map((line, i) => {
+        const y = 780 - i * 16;
+        return `BT /F1 12 Tf 50 ${y} Td (${escapePdfText(line)}) Tj ET`;
+      })
+      .join("\n");
+    const stream = `${textOps}\n`;
+
+    const objects = [
+      "1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj",
+      "2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj",
+      "3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >> endobj",
+      "4 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj",
+      `5 0 obj << /Length ${stream.length} >> stream\n${stream}endstream endobj`,
+    ];
+
+    let pdf = "%PDF-1.4\n";
+    const offsets = [0];
+    objects.forEach((obj) => {
+      offsets.push(pdf.length);
+      pdf += `${obj}\n`;
+    });
+    const xrefStart = pdf.length;
+    pdf += `xref\n0 ${objects.length + 1}\n`;
+    pdf += "0000000000 65535 f \n";
+    offsets.slice(1).forEach((off) => {
+      pdf += `${String(off).padStart(10, "0")} 00000 n \n`;
+    });
+    pdf += `trailer << /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefStart}\n%%EOF`;
+    return new TextEncoder().encode(pdf);
+  };
+
+  const exportCSV = () => {
+    if (!result) return;
+    const rows = [
+      ["status", result.status || ""],
+      ["matched", result.matched ?? 0],
+      ["unmatched", result.unmatched ?? 0],
+      ["exceptions", result.exceptions ?? 0],
+      ["bank_total", result.bank_total ?? 0],
+      ["internal_total", result.internal_total ?? 0],
+      ["variance", result.variance ?? 0],
+      ["generated_at", new Date().toISOString()],
+    ];
+    const csv = rows.map(([k, v]) => `${k},${JSON.stringify(v)}`).join("\n");
+    downloadFile(`reconciliation-report-${new Date().toISOString().slice(0, 10)}.csv`, csv, "text/csv;charset=utf-8");
+  };
+
+  const exportPDF = () => {
+    if (!result) return;
+    const text = [
+      "RECONCILIATION REPORT",
+      "====================",
+      `Status: ${result.status || "UNKNOWN"}`,
+      `Matched: ${result.matched ?? 0}`,
+      `Unmatched: ${result.unmatched ?? 0}`,
+      `Exceptions: ${result.exceptions ?? 0}`,
+      `Bank Total: ${result.bank_total ?? 0}`,
+      `Internal Total: ${result.internal_total ?? 0}`,
+      `Variance: ${result.variance ?? 0}`,
+      `Generated At: ${new Date().toISOString()}`,
+    ].join("\n");
+    const pdfBytes = buildSimplePdf(text);
+    downloadFile(`reconciliation-report-${new Date().toISOString().slice(0, 10)}.pdf`, pdfBytes, "application/pdf");
+  };
  
    const run = async () => {
      setRunning(true); setResult(null);
@@ -479,18 +598,31 @@
            </div>
          </Card>
  
-         {result && (
-           <div className="fi">
-             <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginBottom: 14 }}>
-               <Metric label="Matched"   value={result.matched   ?? 0} color="#16A34A" icon="✓" />
-               <Metric label="Unmatched" value={result.unmatched ?? 0} color="#DC2626" icon="✗" />
-               <Metric label="Exceptions"value={result.exceptions?? 0} color="#D97706" icon="!" />
-             </div>
-             <Card>
-               <div style={{ fontSize: 13, fontWeight: 700, color: "#374151", marginBottom: 14 }}>Summary</div>
-               <pre style={{ fontFamily: "Geist Mono", fontSize: 12, color: "#6B7280", background: "#F9FAFB", borderRadius: 8, padding: 16, overflow: "auto", border: "1px solid #E5E7EB", maxHeight: 320, whiteSpace: "pre-wrap" }}>
-                 {JSON.stringify(result, null, 2)}
-               </pre>
+          {result && (
+          <div className="fi">
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 14 }}>
+              <Metric label="Matched"   value={result.matched   ?? 0} color="#16A34A" icon="✓" />
+              <Metric label="Unmatched" value={result.unmatched ?? 0} color="#DC2626" icon="✗" />
+              <Metric label="Exceptions"value={result.exceptions?? 0} color="#D97706" icon="!" />
+              <Metric label="Status" value={result.status || (Math.abs(result.variance || 0) < 1 ? "BALANCED" : "VARIANCE DETECTED")} color={Math.abs(result.variance || 0) < 1 ? "#16A34A" : "#DC2626"} icon="◎" />
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginBottom: 14 }}>
+              <Metric label="Bank Total" value={fmt(result.bank_total)} color="#2563EB" />
+              <Metric label="Internal Total" value={fmt(result.internal_total)} color="#7C3AED" />
+              <Metric label="Variance" value={fmt(result.variance)} color={Math.abs(result.variance || 0) < 1 ? "#16A34A" : "#DC2626"} />
+            </div>
+            <Card>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, gap: 8, flexWrap: "wrap" }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "#374151" }}>Summary</div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button className="btn-ghost" style={{ fontSize: 12, padding: "6px 10px" }} onClick={exportCSV}>Download CSV</button>
+                  <button className="btn-ghost" style={{ fontSize: 12, padding: "6px 10px" }} onClick={exportPDF}>Download PDF</button>
+                </div>
+              </div>
+              <pre style={{ fontFamily: "Geist Mono", fontSize: 12, color: "#6B7280", background: "#F9FAFB", borderRadius: 8, padding: 16, overflow: "auto", border: "1px solid #E5E7EB", maxHeight: 320, whiteSpace: "pre-wrap" }}>
+                {JSON.stringify(result, null, 2)}
+              </pre>
+                
              </Card>
            </div>
          )}
@@ -560,7 +692,7 @@
  }
  
  // ── Tickets ───────────────────────────────────────────────────────────────────
- function Tickets({ user, toast }) {
+function Tickets({ user, toast }) {
    const [tickets, setTickets] = useState([]);
    const [loading, setLoading] = useState(true);
    const [showNew, setShowNew] = useState(false);
@@ -589,10 +721,22 @@
      finally { setSaving(false); }
    };
  
-   const changeStatus = async (id, status) => {
-     try { await API.updateTicket(id, { status }); toast("Status updated"); load(); if (selected?._id === id) setSelected(t => ({ ...t, status })); }
-     catch (e) { toast(e.message, "error"); }
-   };
+    const changeStatus = async (id, status) => {
+    try { await API.updateTicket(id, { status }); toast("Status updated"); load(); if (selected?._id === id) setSelected(t => ({ ...t, status })); }
+    catch (e) { toast(e.message, "error"); }
+  };
+
+  const removeTicket = async (id) => {
+    if (!confirm("Delete this ticket?")) return;
+    try {
+      await API.deleteTicket(id);
+      toast("Ticket deleted");
+      if (selected?._id === id) setSelected(null);
+      load();
+    } catch (e) {
+      toast(e.message, "error");
+    }
+  };
  
    return (
      <PageShell title="Support Tickets" sub={`${tickets.length} tickets`}
@@ -600,7 +744,7 @@
        <Card style={{ padding: 0, overflow: "hidden" }}>
          {loading ? <div style={{ padding: 40, textAlign: "center" }}><Spinner /></div> : (
            <table>
-             <thead><tr><th>Title</th><th>Priority</th><th>Category</th><th>Status</th><th>Created</th><th /></tr></thead>
+             <thead><tr><th>Title</th><th>Priority</th><th>Category</th><th>Status</th><th>Created</th><th>Actions</th><th /></tr></thead>
              <tbody>
                {tickets.length === 0 ? <tr><td colSpan={6} style={{ textAlign: "center", padding: 40, color: "#9CA3AF" }}>No tickets</td></tr> :
                  tickets.map(t => (
@@ -611,12 +755,17 @@
                      <td><Tag label={t.status} /></td>
                      <td style={{ color: "#9CA3AF", fontSize: 12 }}>{new Date(t.createdAt).toLocaleDateString()}</td>
                      <td>
-                       {user?.role === "admin" && (
-                         <select className="inp" style={{ padding: "4px 8px", fontSize: 11, width: "auto" }}
-                           value={t.status} onClick={e => e.stopPropagation()} onChange={e => { e.stopPropagation(); changeStatus(t._id, e.target.value); }}>
-                           {["open","in-progress","resolved","closed"].map(s => <option key={s} value={s}>{s}</option>)}
-                         </select>
-                       )}
+                        <div style={{ display: "flex", gap: 6 }}>
+                         {user?.role === "admin" && (
+                           <select className="inp" style={{ padding: "4px 8px", fontSize: 11, width: "auto" }}
+                             value={t.status} onClick={e => e.stopPropagation()} onChange={e => { e.stopPropagation(); changeStatus(t._id, e.target.value); }}>
+                             {["open","in-progress","resolved","closed"].map(s => <option key={s} value={s}>{s}</option>)}
+                           </select>
+                         )}
+                         <button className="btn-danger" style={{ padding: "4px 10px", fontSize: 11 }} onClick={e => { e.stopPropagation(); removeTicket(t._id); }}>
+                           Delete
+                         </button>
+                       </div>
                      </td>
                    </tr>
                  ))}
@@ -682,24 +831,149 @@
    );
  }
  
- // ── Admin ─────────────────────────────────────────────────────────────────────
- function Admin({ toast }) {
+
+// ── Team ──────────────────────────────────────────────────────────────────────
+function Team({ toast }) {
+  const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [invite, setInvite] = useState({ email: "", role: "member" });
+  const [saving, setSaving] = useState(false);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await API.getTeamMembers();
+      setMembers(Array.isArray(response) ? response : response.members || []);
+    } catch (e) {
+      toast(e.message, "error");
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const sendInvite = async () => {
+    if (!invite.email.trim()) return;
+    setSaving(true);
+    try {
+      await API.inviteTeamMember(invite.email.trim(), invite.role);
+      toast("Team invite sent");
+      setInvite({ email: "", role: "member" });
+      load();
+    } catch (e) {
+      toast(e.message, "error");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const changeRole = async (id, role) => {
+    try {
+      await API.updateTeamMemberRole(id, role);
+      setMembers(prev => prev.map(m => (m._id === id ? { ...m, role } : m)));
+      toast("Role updated");
+    } catch (e) {
+      toast(e.message, "error");
+    }
+  };
+
+  const removeMember = async (id) => {
+    if (!confirm("Remove this team member?")) return;
+    try {
+      await API.removeTeamMember(id);
+      setMembers(prev => prev.filter(m => m._id !== id));
+      toast("Member removed");
+    } catch (e) {
+      toast(e.message, "error");
+    }
+  };
+
+  return (
+    <PageShell
+      title="Team Management"
+      sub={`${members.length} members`}
+      actions={(
+        <div style={{ display: "flex", gap: 8 }}>
+          <input className="inp" placeholder="invite@company.com" value={invite.email} onChange={e => setInvite(p => ({ ...p, email: e.target.value }))} style={{ width: 220 }} />
+          <select className="inp" value={invite.role} onChange={e => setInvite(p => ({ ...p, role: e.target.value }))} style={{ width: 120 }}>
+            <option value="admin">admin</option>
+            <option value="member">member</option>
+            <option value="viewer">viewer</option>
+          </select>
+          <button className="btn-primary" onClick={sendInvite} disabled={saving}>{saving ? "Inviting…" : "Invite"}</button>
+        </div>
+      )}
+    >
+      <Card style={{ padding: 0, overflow: "hidden" }}>
+        {loading ? (
+          <div style={{ padding: 40, textAlign: "center" }}><Spinner /></div>
+        ) : (
+          <table>
+            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Actions</th></tr></thead>
+            <tbody>
+              {members.length === 0 ? (
+                <tr><td colSpan={5} style={{ textAlign: "center", padding: 40, color: "#9CA3AF" }}>No team members found</td></tr>
+              ) : members.map(member => (
+                <tr key={member._id}>
+                  <td style={{ fontWeight: 600, color: "#1F2937" }}>{member.name || "Invited user"}</td>
+                  <td style={{ color: "#6B7280", fontSize: 12 }}>{member.email}</td>
+                  <td>
+                    <select className="inp" style={{ padding: "4px 8px", fontSize: 11, width: "auto" }} value={member.role} onChange={e => changeRole(member._id, e.target.value)}>
+                      <option value="admin">admin</option>
+                      <option value="member">member</option>
+                      <option value="viewer">viewer</option>
+                    </select>
+                  </td>
+                  <td style={{ color: "#9CA3AF", fontSize: 12 }}>{member.createdAt ? new Date(member.createdAt).toLocaleDateString() : "—"}</td>
+                  <td><button className="btn-danger" style={{ padding: "4px 10px", fontSize: 11 }} onClick={() => removeMember(member._id)}>Remove</button></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </Card>
+    </PageShell>
+  );
+}
+
+// ── Admin ─────────────────────────────────────────────────────────────────────
+function Admin({ toast }) {
    const [sub, setSub] = useState("users");
    const [users, setUsers] = useState([]);
    const [analytics, setAnalytics] = useState(null);
    const [monitoring, setMonitoring] = useState(null);
    const [audit, setAudit] = useState([]);
+   const [auditPage, setAuditPage] = useState(1);
+   const [auditHasMore, setAuditHasMore] = useState(true);
+   const [auditLoadingMore, setAuditLoadingMore] = useState(false);
    const [loading, setLoading] = useState(true);
- 
-   useEffect(() => {
-     setLoading(true);
-     Promise.all([
-       API.getAdminUsers().catch(() => []),
-       API.getAdminAnalytics().catch(() => null),
-       API.getMonitoring().catch(() => null),
-       API.getAuditLog().catch(() => ({ logs: [] })),
-     ]).then(([u, a, m, au]) => { setUsers(u); setAnalytics(a); setMonitoring(m); setAudit(au.logs || []); setLoading(false); });
-   }, []);
+
+  const loadAuditPage = useCallback(async (page, append = false) => {
+    const payload = await API.getAuditLog(page).catch(() => ({ logs: [] }));
+    const logs = Array.isArray(payload?.logs) ? payload.logs : Array.isArray(payload) ? payload : [];
+    const hasMoreByMeta =
+      typeof payload?.hasMore === "boolean"
+        ? payload.hasMore
+        : typeof payload?.totalPages === "number" && typeof payload?.page === "number"
+          ? payload.page < payload.totalPages
+          : null;
+    setAudit(prev => append ? [...prev, ...logs] : logs);
+    setAuditHasMore(hasMoreByMeta ?? logs.length > 0);
+    setAuditPage(page);
+  }, []);
+
+  useEffect(() => {
+    setLoading(true);
+    Promise.all([
+      API.getAdminUsers().catch(() => []),
+      API.getAdminAnalytics().catch(() => null),
+      API.getMonitoring().catch(() => null),
+      loadAuditPage(1),
+    ]).then(([u, a, m]) => { setUsers(u); setAnalytics(a); setMonitoring(m); setLoading(false); });
+  }, [loadAuditPage]);
  
    const toggleRole = async (id, role) => {
      try { const u = await API.updateAdminUser(id, { role }); setUsers(p => p.map(x => x._id === id ? { ...x, role: u.role } : x)); toast("Role updated"); }
@@ -712,7 +986,18 @@
      catch (e) { toast(e.message, "error"); }
    };
  
-   const TABS = [{ id: "users", l: "Users" }, { id: "analytics", l: "Analytics" }, { id: "monitoring", l: "Monitoring" }, { id: "audit", l: "Audit Log" }];
+    const TABS = [{ id: "users", l: "Users" }, { id: "analytics", l: "Analytics" }, { id: "monitoring", l: "Monitoring" }, { id: "audit", l: "Audit Log" }];
+
+  const loadMoreAudit = async () => {
+    setAuditLoadingMore(true);
+    try {
+      await loadAuditPage(auditPage + 1, true);
+    } catch (e) {
+      toast(e.message, "error");
+    } finally {
+      setAuditLoadingMore(false);
+    }
+  };
  
    return (
      <PageShell title="Admin Panel" sub="Platform management">
@@ -776,24 +1061,31 @@
            </div>
          )}
  
-         {sub === "audit" && (
-           <Card style={{ padding: 0, overflow: "hidden" }}>
-             <table>
-               <thead><tr><th>User</th><th>Action</th><th>Entity</th><th>Timestamp</th></tr></thead>
-               <tbody>
-                 {audit.length === 0 ? <tr><td colSpan={4} style={{ textAlign: "center", padding: 40, color: "#9CA3AF" }}>No audit logs</td></tr> :
-                   audit.map(a => (
-                     <tr key={a._id}>
-                       <td style={{ color: "#1F2937" }}>{a.user?.name || "System"}</td>
-                       <td className="mono" style={{ fontSize: 12 }}>{a.action}</td>
-                       <td style={{ color: "#6B7280" }}>{a.entityType} {a.entityId ? `#${a.entityId.toString().slice(-6)}` : ""}</td>
-                       <td style={{ color: "#9CA3AF", fontSize: 12 }}>{new Date(a.createdAt).toLocaleString()}</td>
-                     </tr>
-                   ))}
-               </tbody>
-             </table>
-           </Card>
-         )}
+          {sub === "audit" && (
+          <div style={{ display: "grid", gap: 10 }}>
+            <Card style={{ padding: 0, overflow: "hidden" }}>
+              <table>
+                <thead><tr><th>User</th><th>Action</th><th>Entity</th><th>Timestamp</th></tr></thead>
+                <tbody>
+                  {audit.length === 0 ? <tr><td colSpan={4} style={{ textAlign: "center", padding: 40, color: "#9CA3AF" }}>No audit logs</td></tr> :
+                    audit.map(a => (
+                      <tr key={a._id}>
+                        <td style={{ color: "#1F2937" }}>{a.user?.name || "System"}</td>
+                        <td className="mono" style={{ fontSize: 12 }}>{a.action}</td>
+                        <td style={{ color: "#6B7280" }}>{a.entityType} {a.entityId ? `#${a.entityId.toString().slice(-6)}` : ""}</td>
+                        <td style={{ color: "#9CA3AF", fontSize: 12 }}>{new Date(a.createdAt).toLocaleString()}</td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </Card>
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <button className="btn-ghost" disabled={!auditHasMore || auditLoadingMore} onClick={loadMoreAudit}>
+                {auditLoadingMore ? "Loading…" : auditHasMore ? `Load More (Page ${auditPage + 1})` : "No more logs"}
+              </button>
+            </div>
+          </div>
+        )}
        </>}
      </PageShell>
    );
