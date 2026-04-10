@@ -1292,9 +1292,7 @@ function Admin({ toast }) {
         <div style={{ display: tab === "transactions" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
           <Transactions {...props} />
         </div>
-        <div style={{ display: tab === "team" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
-          <Team {...props} />
-        </div>
+        
         <div style={{ display: tab === "reconcile" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
           <Reconcile {...props} />
         </div>
