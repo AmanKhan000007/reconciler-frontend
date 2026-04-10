@@ -762,9 +762,13 @@ function Tickets({ user, toast }) {
                              {["open","in-progress","resolved","closed"].map(s => <option key={s} value={s}>{s}</option>)}
                            </select>
                          )}
-                         <button className="btn-danger" style={{ padding: "4px 10px", fontSize: 11 }} onClick={e => { e.stopPropagation(); removeTicket(t._id); }}>
-                           Delete
-                         </button>
+                          // Line 764 ends with
+                            
+                         {user?.role === "admin" && (
+                            <button className="btn-danger" style={{ padding: "4px 10px", fontSize: 11 }} onClick={e => { e.stopPropagation(); removeTicket(t._id); }}>
+                              Delete
+                              </button>
+                         )}      
                        </div>
                      </td>
                    </tr>
@@ -785,7 +789,7 @@ function Tickets({ user, toast }) {
                    <option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option>
                  </select>
                </div>
-               <div><label>Category</label><input className="inp" value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))} placeholder="e.g. billing" /></div>
+                <div><label>Category</label><select className="inp" value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))}><option value="other">Other</option><option value="bug">Bug</option><option value="feature">Feature</option><option value="billing">Billing</option><option value="access">Access</option></select></div>
              </div>
              <div style={{ display: "flex", gap: 10 }}>
                <button className="btn-ghost" style={{ flex: 1 }} onClick={() => setShowNew(false)}>Cancel</button>
@@ -957,8 +961,8 @@ function Admin({ toast }) {
     const hasMoreByMeta =
       typeof payload?.hasMore === "boolean"
         ? payload.hasMore
-        : typeof payload?.totalPages === "number" && typeof payload?.page === "number"
-          ? payload.page < payload.totalPages
+        : typeof payload?.Pages === "number" && typeof payload?.page === "number"
+          ? payload.page < payload.Pages
           : null;
     setAudit(prev => append ? [...prev, ...logs] : logs);
     setAuditHasMore(hasMoreByMeta ?? logs.length > 0);
