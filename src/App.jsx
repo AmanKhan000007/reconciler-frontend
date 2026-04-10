@@ -1277,40 +1277,46 @@ function Admin({ toast }) {
      return () => window.removeEventListener("popstate", handlePop);
    }, []);
  
-   return (
-     <div style={{ display: "flex", height: "100vh", overflow: "hidden", background: "#FFFFFF" }}>
-       <Sidebar tab={tab} setTab={setTab} user={user} onLogout={logout} />
-       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-         <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-           <div style={{ display: tab === "dashboard" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
-             <Dashboard {...props} />
-           </div>
-           <div style={{ display: tab === "transactions" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
-             <Transactions {...props} />
-           </div>
-           <div style={{ display: tab === "reconcile" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
-             <Reconcile {...props} />
-           </div>
-           <div style={{ display: tab === "ledger" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
-             <Ledger {...props} />
-           </div>
-           <div style={{ display: tab === "tickets" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
-             <Tickets {...props} />
-           </div>
-           <div style={{ display: tab === "admin" && user?.role === "admin" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
-             {user?.role === "admin" && <Admin {...props} />}
-           </div>
-           <div style={{ display: tab === "settings" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
-             <Settings {...props} setUser={setUser} />
-           </div>
-         </div>
-         <Footer compact />
-       </div>
-       {toasts.map(t => <Toast key={t.id} msg={t.msg} type={t.type} onClose={() => setToasts(p => p.filter(x => x.id !== t.id))} />)}
-     </div>
-   );
+    return (
+  <div style={{ display: "flex", height: "100vh", overflow: "hidden", background: "#FFFFFF" }}>
+    <Sidebar tab={tab} setTab={setTab} user={user} onLogout={logout} />
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <div style={{ display: tab === "dashboard" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
+          <Dashboard {...props} />
+        </div>
+        <div style={{ display: tab === "transactions" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
+          <Transactions {...props} />
+        </div>
+        <div style={{ display: tab === "team" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
+          <Team {...props} />
+        </div>
+        <div style={{ display: tab === "reconcile" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
+          <Reconcile {...props} />
+        </div>
+        <div style={{ display: tab === "ledger" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
+          <Ledger {...props} />
+        </div>
+        <div style={{ display: tab === "tickets" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
+          <Tickets {...props} />
+        </div>
+        <div style={{ display: tab === "team" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
+          <Team {...props} />
+        </div>
+        <div style={{ display: tab === "admin" && user?.role === "admin" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
+          {user?.role === "admin" && <Admin {...props} />}
+        </div>
+        <div style={{ display: tab === "settings" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
+          <Settings {...props} setUser={setUser} />
+        </div>
+      </div>
+      <Footer compact />
+    </div>
+    {toasts.map(t => <Toast key={t.id} msg={t.msg} type={t.type} onClose={() => setToasts(p => p.filter(x => x.id !== t.id))} />)}
+  </div>
+);
  }
- 
+
  // ── Auth Forms ────────────────────────────────────────────────────────────────
  function AuthPage({ onLogin, onBack }) {
    const [mode, setMode] = useState("login");
@@ -1679,4 +1685,3 @@ function Admin({ toast }) {
    if (screen === "auth") return <AuthPage onLogin={u => { setUser(u); navigate("app"); }} onBack={() => navigate("landing")} />;
    return <AppShell user={user} setUser={setUser} />;
  }
- 

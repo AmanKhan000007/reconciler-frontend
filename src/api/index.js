@@ -72,5 +72,5 @@ export const getAuditLog      = (page = 1) => req('GET', `/admin/audit?page=${pa
 // ── Team ──────────────────────────────────────────────────────
 export const getTeamMembers  = () => req('GET', '/team');
 export const inviteTeamMember = (email, role) => req('POST', '/team/invite', { email, role });
-export const updateTeamMemberRole = (id, role) => req('PATCH', `/team/${id}/role`, { role });
+export const updateTeamMemberRole = (id, role) => req('PATCH', `/team/${id}`, { role });
 export const removeTeamMember = (id) => req('DELETE', `/team/${id}`);
