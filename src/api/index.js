@@ -37,7 +37,10 @@ export const changePassword = (currentPassword, newPassword) => req('PUT', '/aut
 
 // ── Transactions ──────────────────────────────────────────────
 export const getTransactions = (params = {}) => {
-  const q = new URLSearchParams(params).toString();
+  const clean = Object.fromEntries(
+  Object.entries(params).filter(([_, v]) => v !== undefined)
+);
+const q = new URLSearchParams(clean).toString();
   return req('GET', `/transactions${q ? '?' + q : ''}`);
 };
 export const createTransaction = (data) => req('POST', '/transactions', data);
