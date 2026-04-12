@@ -324,7 +324,7 @@ function Transactions({ toast }) {
  
    const load = useCallback(async () => {
      setLoading(true);
-     try { setTxs(await API.getTransactions(filter)); }
+     try { const res = await API.getTransactions(filter); setTxs(res.data || res); }
      catch (e) { toast(e.message, "error"); }
      finally { setLoading(false); }
    }, [filter,toast]);
@@ -701,7 +701,7 @@ function Tickets({ user, toast }) {
    const [comment, setComment] = useState("");
    const [saving, setSaving] = useState(false);
  
-   const load = () => { setLoading(true); API.getTickets().then(setTickets).catch(e => toast(e.message, "error")).finally(() => setLoading(false)); };
+   const load = () => { setLoading(true); API.getTickets().then(res => setTickets(res.data || res)).catch(e => toast(e.message, "error")).finally(() => setLoading(false)); };
    useEffect(load, []);
  
    const create = async () => {
