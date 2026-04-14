@@ -1,4 +1,4 @@
- import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
  import * as API from "./api/index.js";
  import DemoPlayer from "./components/DemoPlayer.jsx";
  
@@ -161,7 +161,7 @@
    { id: "dashboard",    icon: "⊞", label: "Dashboard" },
    { id: "transactions", icon: "⇄", label: "Transactions" },
    { id: "reconcile",   icon: "◎", label: "Reconcile" },
-   { id: "team",         icon: "◉", label: "Team" },
+   { id: "team",        icon: "◉", label: "Team", adminOnly: true },
    { id: "ledger",      icon: "≡", label: "Ledger" },
    { id: "tickets",     icon: "◫", label: "Tickets" },
    { id: "admin",       icon: "⚙", label: "Admin", adminOnly: true },
@@ -324,7 +324,7 @@ function Transactions({ toast }) {
  
    const load = useCallback(async () => {
      setLoading(true);
-     try { const res = await API.getTransactions(filter); setTxs(res.data || res); }
+      try { const res = await API.getTransactions(filter); setTxs(res.data || res); }
      catch (e) { toast(e.message, "error"); }
      finally { setLoading(false); }
    }, [filter,toast]);
@@ -834,10 +834,9 @@ function Tickets({ user, toast }) {
      </PageShell>
    );
  }
- 
 
 // ── Team ──────────────────────────────────────────────────────────────────────
-function Team({ toast }) {
+function Team({ user, toast }) {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [invite, setInvite] = useState({ email: "", role: "member" });
@@ -847,7 +846,7 @@ function Team({ toast }) {
     setLoading(true);
     try {
       const response = await API.getTeamMembers();
-      setMembers(Array.isArray(response) ? response : response.members || []);
+      setMembers(Array.isArray(response) ? response : (response.members || response.data || []));
     } catch (e) {
       toast(e.message, "error");
     } finally {
@@ -855,9 +854,7 @@ function Team({ toast }) {
     }
   }, [toast]);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useEffect(() => { load(); }, [load]);
 
   const sendInvite = async () => {
     if (!invite.email.trim()) return;
@@ -932,7 +929,11 @@ function Team({ toast }) {
                     </select>
                   </td>
                   <td style={{ color: "#9CA3AF", fontSize: 12 }}>{member.createdAt ? new Date(member.createdAt).toLocaleDateString() : "—"}</td>
-                  <td><button className="btn-danger" style={{ padding: "4px 10px", fontSize: 11 }} onClick={() => removeMember(member._id)}>Remove</button></td>
+                  <td>
+                    {user?.role === "admin" && (
+                      <button className="btn-danger" style={{ padding: "4px 10px", fontSize: 11 }} onClick={() => removeMember(member._id)}>Remove</button>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -943,7 +944,6 @@ function Team({ toast }) {
   );
 }
 
-// ── Admin ─────────────────────────────────────────────────────────────────────
 function Admin({ toast }) {
    const [sub, setSub] = useState("users");
    const [users, setUsers] = useState([]);
@@ -961,8 +961,8 @@ function Admin({ toast }) {
     const hasMoreByMeta =
       typeof payload?.hasMore === "boolean"
         ? payload.hasMore
-        : typeof payload?.Pages === "number" && typeof payload?.page === "number"
-          ? payload.page < payload.Pages
+        : typeof payload?.pages === "number" && typeof payload?.page === "number"
+          ? payload.page < payload.pages
           : null;
     setAudit(prev => append ? [...prev, ...logs] : logs);
     setAuditHasMore(hasMoreByMeta ?? logs.length > 0);
@@ -976,7 +976,7 @@ function Admin({ toast }) {
       API.getAdminAnalytics().catch(() => null),
       API.getMonitoring().catch(() => null),
       loadAuditPage(1),
-    ]).then(([u, a, m]) => { setUsers(u); setAnalytics(a); setMonitoring(m); setLoading(false); });
+    ]).then(([u, a, m]) => { setUsers(Array.isArray(u) ? u : (u?.data || [])); setAnalytics(a); setMonitoring(m); setLoading(false); });
   }, [loadAuditPage]);
  
    const toggleRole = async (id, role) => {
@@ -1246,80 +1246,90 @@ function Admin({ toast }) {
  function appPathForTab(tab) {
    return `/app/${tab}`;
  }
- 
- function AppShell({ user, setUser }) {
-   const [tab, setTab] = useState(() => {
-     if (typeof window === "undefined") return "dashboard";
-     return window.history.state?.tab || appTabFromPath(window.location.pathname) || localStorage.getItem("rec_tab") || "dashboard";
-   });
-   const [toasts, setToasts] = useState([]);
-   const toast = (msg, type = "success") => setToasts(p => [...p, { id: Date.now(), msg, type }]);
-   const logout = () => { localStorage.removeItem("rec_token"); setUser(null); };
-   const props = { user, toast };
- 
-   useEffect(() => {
-     if (typeof window !== "undefined") {
-       localStorage.setItem("rec_tab", tab);
-       const nextPath = appPathForTab(tab);
-       if (window.location.pathname !== nextPath) {
-         window.history.pushState({ screen: "app", tab }, "", nextPath);
-       } else if (window.history.state?.tab !== tab || window.history.state?.screen !== "app") {
-         window.history.replaceState({ screen: "app", tab }, "", nextPath);
-       }
-     }
-   }, [tab]);
- 
-   useEffect(() => {
-     const handlePop = event => {
-       if (event.state?.tab) {
-         setTab(event.state.tab);
-       } else {
-         setTab(appTabFromPath(window.location.pathname) || "dashboard");
-       }
-     };
-     window.addEventListener("popstate", handlePop);
-     return () => window.removeEventListener("popstate", handlePop);
-   }, []);
- 
-    return (
-  <div style={{ display: "flex", height: "100vh", overflow: "hidden", background: "#FFFFFF" }}>
-    <Sidebar tab={tab} setTab={setTab} user={user} onLogout={logout} />
-    <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-        <div style={{ display: tab === "dashboard" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
-          <Dashboard {...props} />
-        </div>
-        <div style={{ display: tab === "transactions" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
-          <Transactions {...props} />
-        </div>
-        
-        <div style={{ display: tab === "reconcile" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
-          <Reconcile {...props} />
-        </div>
-        <div style={{ display: tab === "ledger" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
-          <Ledger {...props} />
-        </div>
-        <div style={{ display: tab === "tickets" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
-          <Tickets {...props} />
-        </div>
-        <div style={{ display: tab === "team" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
-          <Team {...props} />
-        </div>
-        <div style={{ display: tab === "admin" && user?.role === "admin" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
-          {user?.role === "admin" && <Admin {...props} />}
-        </div>
-        <div style={{ display: tab === "settings" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
-          <Settings {...props} setUser={setUser} />
-        </div>
-      </div>
-      <Footer compact />
-    </div>
-    {toasts.map(t => <Toast key={t.id} msg={t.msg} type={t.type} onClose={() => setToasts(p => p.filter(x => x.id !== t.id))} />)}
-  </div>
-);
- }
 
- // ── Auth Forms ────────────────────────────────────────────────────────────────
+// ── App Shell ─────────────────────────────────────────────────────────────────
+function AppShell({ user, setUser, onLogout }) {
+  const [tab, setTab] = useState(() => {
+    if (typeof window === "undefined") return "dashboard";
+    return window.history.state?.tab || appTabFromPath(window.location.pathname) || localStorage.getItem("rec_tab") || "dashboard";
+  });
+  const [toasts, setToasts] = useState([]);
+  const toast = (msg, type = "success") => setToasts(p => [...p, { id: Date.now(), msg, type }]);
+  const logout = onLogout;
+  const props = { user, toast };
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("rec_tab", tab);
+      const nextPath = appPathForTab(tab);
+      if (window.location.pathname !== nextPath) {
+        window.history.pushState({ screen: "app", tab }, "", nextPath);
+      } else if (window.history.state?.tab !== tab || window.history.state?.screen !== "app") {
+        window.history.replaceState({ screen: "app", tab }, "", nextPath);
+      }
+    }
+  }, [tab]);
+
+  useEffect(() => {
+    const handlePop = event => {
+      if (event.state?.tab) {
+        setTab(event.state.tab);
+      } else {
+        setTab(appTabFromPath(window.location.pathname) || "dashboard");
+      }
+    };
+    window.addEventListener("popstate", handlePop);
+    return () => window.removeEventListener("popstate", handlePop);
+  }, []);
+
+  return (
+    <div style={{ display: "flex", height: "100vh", overflow: "hidden", background: "#FFFFFF" }}>
+      <Sidebar tab={tab} setTab={setTab} user={user} onLogout={logout} />
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+
+          <div style={{ display: tab === "dashboard" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
+            <Dashboard {...props} />
+          </div>
+
+          <div style={{ display: tab === "transactions" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
+            <Transactions {...props} />
+          </div>
+
+          <div style={{ display: tab === "reconcile" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
+            <Reconcile {...props} />
+          </div>
+
+          <div style={{ display: tab === "ledger" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
+            <Ledger {...props} />
+          </div>
+
+          <div style={{ display: tab === "tickets" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
+            <Tickets {...props} />
+          </div>
+
+          <div style={{ display: tab === "team" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
+            <Team {...props} />
+          </div>
+
+          <div style={{ display: tab === "admin" && user?.role === "admin" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
+            {user?.role === "admin" && <Admin {...props} />}
+          </div>
+
+          <div style={{ display: tab === "settings" ? "flex" : "none", flexDirection: "column", overflow: "auto", height: "100%" }}>
+            <Settings {...props} setUser={setUser} />
+          </div>
+
+        </div>
+        <Footer compact />
+      </div>
+      {toasts.map(t => (
+        <Toast key={t.id} msg={t.msg} type={t.type} onClose={() => setToasts(p => p.filter(x => x.id !== t.id))} />
+      ))}
+    </div>
+  );
+}
+
  function AuthPage({ onLogin, onBack }) {
    const [mode, setMode] = useState("login");
    const [form, setForm] = useState({ name: "", email: "", password: "" });
@@ -1655,7 +1665,10 @@ function Admin({ toast }) {
      if (token) {
        API.getMe()
          .then(u => { setUser(u); navigate("app"); })
-         .catch(() => localStorage.removeItem("rec_token"))
+         .catch(() => {
+           localStorage.removeItem("rec_token");
+           navigate("auth"); // ✅ redirect to login when token is invalid/expired
+         })
          .finally(() => setBootstrapped(true));
      } else {
        setBootstrapped(true);
@@ -1685,5 +1698,10 @@ function Admin({ toast }) {
    if (!bootstrapped) return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F9FAFB" }}><Spinner size={32} /></div>;
    if (screen === "landing") return <Landing onEnter={() => navigate("auth")} />;
    if (screen === "auth") return <AuthPage onLogin={u => { setUser(u); navigate("app"); }} onBack={() => navigate("landing")} />;
-   return <AppShell user={user} setUser={setUser} />;
+   // Safety net: if somehow on "app" screen without a user, redirect to auth
+  if (screen !== "app" && !user) {
+  navigate("auth");
+  return null;
+  }
+   return <AppShell user={user} setUser={setUser} onLogout={() => { localStorage.removeItem("rec_token"); setUser(null); navigate("landing"); }} />;
  }
